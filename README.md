@@ -2,4 +2,4 @@
 
 ### mySQL, ReactJS, NodeJS, ExpressJS
 
-#### Hieu Nghia Lee
+#### Hieu Nghia Lee 🐰

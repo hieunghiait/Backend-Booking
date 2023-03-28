@@ -1,4 +1,4 @@
-# Website Đặt lịch khám bệnh
+# Website booking an appointment for medical examination
 
 ## mySQL, ReactJS, NodeJS, ExpressJS
 

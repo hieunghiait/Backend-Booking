@@ -1,5 +1,5 @@
 ## Project: Website booking an appointment for medical examination
 
-### mySQL, ReactJS, NodeJS, ExpressJS
+### Technologies: mySQL, ReactJS, NodeJS, ExpressJS
 
 #### Hieu Nghia Lee 🐰

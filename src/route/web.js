@@ -5,7 +5,9 @@ let initWebRoutes = (app) => {
     router.get("/", homeController.getHomePage);
     router.get("/about", homeController.getAboutPage);
     router.get("/crud", homeController.getCRUD);
-    router.post("/post-crud", homeController.postCRUD)
+    router.post("/post-crud", homeController.postCRUD);
+    //Định nghĩa route
+    router.get("/get-crud", homeController.displayGetCRUD);
     //rest api
     router.get("/hieunghia", (req, res) => {
         return res.send("My name is Hieu Nghia");

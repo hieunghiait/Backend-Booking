@@ -8,6 +8,8 @@ let initWebRoutes = (app) => {
     router.post("/post-crud", homeController.postCRUD);
     //Định nghĩa route
     router.get("/get-crud", homeController.displayGetCRUD);
+    router.get("/edit-crud", homeController.getEditCRUD);
+    router.post('/put-crud', homeController.putCRUD)
     //rest api
     router.get("/hieunghia", (req, res) => {
         return res.send("My name is Hieu Nghia");

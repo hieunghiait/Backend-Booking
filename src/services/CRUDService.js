@@ -109,6 +109,8 @@ let deleteUserById = (userId) => {
         }
     })
 }
+
+//Export 
 module.exports = {
     createNewUser: createNewUser,
     getAllUser: getAllUser,

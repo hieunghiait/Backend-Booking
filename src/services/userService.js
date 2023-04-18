@@ -1,4 +1,4 @@
-import db from "../models/index"
+import db from "../models/index";
 import bcrypt, { hash } from 'bcryptjs';
 
 let handleUserLogin = (email, password) => {
@@ -11,7 +11,7 @@ let handleUserLogin = (email, password) => {
                 //compare password 
                 //find hashpassword of user 
                 let user = await db.User.findOne({
-                    attributes: ['id', 'email', 'password', 'roleId'],
+                    attributes: ['email', 'roleId', 'password'],
                     where: { email: email },
                     raw: true
                 });

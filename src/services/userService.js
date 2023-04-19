@@ -15,7 +15,6 @@ let handleUserLogin = (email, password) => {
                     where: { email: email },
                     raw: true
                 });
-
                 if (user) {
                     // If the user exists, compare their stored password with the provided password
                     let check = await bcrypt.compareSync(password, user.password);
@@ -72,6 +71,39 @@ let checkUserEmail = (userEmail) => {
         }
     });
 };
+/**
+ * 
+ * @param {*} userId 
+ * @returns Return about all user in database if type = all else return record user with id specify 
+ */
+let getAllUsers = (userId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let users = '';
+            if (userId === 'ALL') {
+                users = await db.User.findAll({
+                    attributes: {
+                        //ignore password
+                        exclude: ['password']
+                    }
+                })
+            }
+            if (userId && userId !== 'ALL') {
+                users = await db.User.findOne({
+                    where: { id: userId },
+                    attributes: {
+                        exclude: ['password']
+                    }
+
+                })
+            }
+            resolve(users)
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 module.exports = {
-    handleUserLogin: handleUserLogin
+    handleUserLogin: handleUserLogin,
+    getAllUsers: getAllUsers,
 }

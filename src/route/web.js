@@ -16,11 +16,17 @@ let initWebRoutes = (app) => {
     //Define router delete user 
     router.get('/delete-crud', homeController.deleteCRUD);
 
-    router.post('/api/login', userController.handleLogin)
+    router.post('/api/login', userController.handleLogin);
+    //Define router delete get-all-users
+    router.get('/api/get-all-users', userController.handleGetAllUsers);
+
     router.get("/hieunghia", (req, res) => {
         return res.send("My name is Hieu Nghia");
     });
+
     return app.use("/", router);
+
+
 };
 
 module.exports = initWebRoutes;

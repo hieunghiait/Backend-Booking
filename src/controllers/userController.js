@@ -15,6 +15,7 @@ let handleLogin = async (req, res) => {
         })
     }
     let userData = await userService.handleUserLogin(email, password);
+
     console.log(userData)
     return res.status(200).json({
 
@@ -26,9 +27,9 @@ let handleLogin = async (req, res) => {
         user: userData.user ? userData.user : {}
     })
 }
-// This function handles the request to get all users based on the specified id (can be ALL or a specific user's ID)
+
 let handleGetAllUsers = async (req, res) => {
-    let id = req.body.id; // The value of the id parameter is extracted from the request body
+    let id = req.query.id;
     if (!id || id.trim() === '') {
         return res.status(400).json({
             errCode: 1,
@@ -44,8 +45,9 @@ let handleGetAllUsers = async (req, res) => {
         users,
     })
 }
-// This exports an object with two properties, handleLogin and handleGetAllUsers, that are functions.
-// These functions can be imported into another module and used to handle specific requests.
+/**
+ * export function 
+ */
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,

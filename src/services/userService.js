@@ -276,7 +276,7 @@ let updateUserData = (data) => {
                 } else {
                     resolve({
                         errCode: 1,
-                        message: `User's not found!`
+                        message: `User's not found !`
                     });
                 }
             }

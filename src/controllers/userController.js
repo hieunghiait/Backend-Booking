@@ -46,9 +46,48 @@ let handleGetAllUsers = async (req, res) => {
     })
 }
 /**
+ * Xử lý tạo mới một user.
+ * @param {Object} req - Đối tượng biểu diễn cho HTTP request
+ * @param {Object} res - Đối tượng biểu diễn cho HTTP response
+ */
+let handleCreateNewUser = async (req, res) => {
+    let message = await userService.createNewUser(req.body);
+    return res.status(200).json(message);
+}
+/**
+ * Xử lý cập nhật thông tin người dùng.
+ * @param {Object} req - Đối tượng biểu diễn cho HTTP request
+ * @param {Object} res - Đối tượng biểu diễn cho HTTP response
+ */
+
+let handleEditUser = async (req, res) => {
+    let data = req.body;
+    let message = await userService.updateUserData(data);
+    return res.status(200).json(message)
+}
+/**
+ * This is a function that handles the deletion of a user.
+ * @param {object} req - The request object, which contains the data sent by the client.
+ * @param {object} res - The response object, which is used to send a response back to the client.
+ * @returns {object} - The result message or an error response with a status code and error message.
+ */
+let handleDeleteUser = async (req, res) => {
+    if (!(req.body.id)) {
+        return res.status(200).json({
+            errCode: 1,
+            errMessage: 'Missing required parameters!'
+        })
+    }
+    let message = await userService.deleteUser(req.body.id);
+    return res.status(200).json(message);
+}
+/**
  * export function 
  */
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,
+    handleCreateNewUser: handleCreateNewUser,
+    handleEditUser: handleEditUser,
+    handleDeleteUser: handleDeleteUser,
 }

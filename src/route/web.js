@@ -9,20 +9,27 @@ let initWebRoutes = (app) => {
     router.get("/about", homeController.getAboutPage);
     router.get("/crud", homeController.getCRUD);
     router.post("/post-crud", homeController.postCRUD);
-    //Define route 
+    //Define route  CRUD
     router.get("/get-crud", homeController.displayGetCRUD);
     router.get("/edit-crud", homeController.getEditCRUD);
     router.post('/put-crud', homeController.putCRUD);
     //Define router delete user 
     router.get('/delete-crud', homeController.deleteCRUD);
-
+    //Define router api login 
     router.post('/api/login', userController.handleLogin);
     //Define router delete get-all-users
     router.get('/api/get-all-users', userController.handleGetAllUsers);
+    //Define router api create new user
+    router.post('/api/create-new-user', userController.handleCreateNewUser);
+    // Define router api edit a user
+    router.put('/api/edit-user', userController.handleEditUser);
+    //Define router api delete user
+    router.delete('/api/delete-user', userController.handleDeleteUser); //rest API
 
-    router.get("/hieunghia", (req, res) => {
-        return res.send("My name is Hieu Nghia");
-    });
+
+    // router.get("/hieunghia", (req, res) => {
+    //     return res.send("My name is Hieu Nghia");
+    // });
 
     return app.use("/", router);
 

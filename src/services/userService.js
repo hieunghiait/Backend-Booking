@@ -177,24 +177,23 @@ let createNewUser = (data) => {
                     errCode: 1,
                     errMessage: 'Your email is already in use, Please try another email',
                 })
+            } else {
+                let hashPasswordFromBcrypt = await hashUserPassword(data.password);
+                await db.User.create({
+                    email: data.email,
+                    password: hashPasswordFromBcrypt,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    address: data.address,
+                    phonenumber: data.phonenumber,
+                    gender: data.gender === '1' ? true : false,
+                    roleId: data.roleId,
+                })
+                resolve({
+                    errCode: 0,
+                    errMessage: 'OK',
+                })
             }
-            //hash password
-            let hashPasswordFromBcrypt = await hashUserPassword(data.password);
-            await db.User.create({
-                email: data.email,
-                password: hashPasswordFromBcrypt,
-                firstName: data.firstName,
-                lastName: data.lastName,
-                address: data.address,
-                phonenumber: data.phonenumber,
-                gender: data.gender === '1' ? true : false,
-                roleId: data.roleId,
-            })
-            resolve({
-                errCode: 0,
-                errMessage: 'OK',
-            })
-
         } catch (e) {
             reject(e);
         }
@@ -271,7 +270,6 @@ let updateUserData = (data) => {
                         errCode: 0,
                         message: 'Update the user success'
                     })
-
                     // If no matching user is found, return an error
                 } else {
                     resolve({

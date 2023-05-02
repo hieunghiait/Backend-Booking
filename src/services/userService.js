@@ -244,23 +244,17 @@ Notes: This function uses Sequelize ORM to interact with the database.
 let updateUserData = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-
-            // Check for missing or invalid input parameters
             if (isNaN(data.id) || !data.id || !data.firstName || !data.lastName || !data.address) {
                 resolve({
                     errCode: 2,
                     errMessage: 'Missing require parameters',
                 })
-
             } else {
-
                 // Query the database to find the user with matching id
                 let user = await db.User.findOne({
                     where: { id: data.id },
                     raw: false
                 })
-
-                // If a matching user is found, update their information and save it to the database
                 if (user) {
                     user.firstName = data.firstName;
                     user.lastName = data.lastName;
@@ -270,7 +264,6 @@ let updateUserData = (data) => {
                         errCode: 0,
                         message: 'Update the user success'
                     })
-                    // If no matching user is found, return an error
                 } else {
                     resolve({
                         errCode: 1,
@@ -278,8 +271,6 @@ let updateUserData = (data) => {
                     });
                 }
             }
-
-            // Catch any errors and reject the Promise with the error object
         } catch (e) {
             reject(e)
         }

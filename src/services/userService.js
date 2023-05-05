@@ -12,55 +12,48 @@ let hashUserPassword = (password) => {
         }
     })
 }
-
+/**
+ * API đăng nhập
+ * @param {*} email đăng nhập với tham số là email
+ * @param {*} password đăng nhập với tham số là password
+ * @returns trả về object JSON nếu lấy được đúng email và password trong database
+ */
 let handleUserLogin = (email, password) => {
     return new Promise(async (resolve, reject) => {
         try {
             let userData = {};
-            // Check if the user email exists in the database
             let isExist = await checkUserEmail(email);
             if (isExist) {
-                //compare password 
-                //find hashpassword of user 
                 let user = await db.User.findOne({
-                    attributes: ['email', 'roleId', 'password'],
+                    attributes: ['email', 'roleId', 'password', 'firstName', 'lastName'],
                     where: { email: email },
                     raw: true
                 });
                 if (user) {
-                    // If the user exists, compare their stored password with the provided password
                     let check = await bcrypt.compareSync(password, user.password);
                     if (check) {
-                        // If the passwords match, create a success response object with the user data
                         userData.errCode = 0;
                         userData.errMessage = 'OK';
                         delete user.password;
                         userData.user = user;
                     } else {
-                        // If the passwords don't match, create an error response object indicating wrong password
                         userData.errCode = 3;
                         userData.errMessage = 'Wrong password';
                     }
                 } else {
-                    // If the user doesn't exist, create an error response object indicating not found
                     userData.errCode = 2;
                     userData.errMessage = `User's not found`;
                 }
             } else {
-                // If the email doesn't exist, create an error response object indicating not found
                 userData.errCode = 1;
-                userData.errMessage = `Your's Email isn't exist in your system. Plz try other email`;
+                userData.errMessage = `Your's Email isn't exist in your system. Please try other email`;
             }
-            // Resolve the promise with the response object
             resolve(userData)
         } catch (e) {
-            // If there was an error, reject the promise with the error message
             reject(e)
         }
     })
 }
-
-
 let checkUserEmail = (userEmail) => {
     return new Promise(async (resolve, reject) => {
         try {

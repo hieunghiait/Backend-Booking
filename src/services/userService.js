@@ -286,7 +286,6 @@ let getAllCodeService = (typeInput) => {
                 })
             } else {
                 let res = {};
-                //get all data from allcode
                 let allcode = await db.Allcode.findAll({
                     where: { type: typeInput }
                 });

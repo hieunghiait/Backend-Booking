@@ -216,6 +216,11 @@ let updateUserData = (data) => {
                     user.address = data.address;
                     user.roleId = data.roleId;
                     user.positionId = data.positionId;
+                    user.gender = data.gender;
+                    user.phonenumber = data.phonenumber;
+                    if (data.avatar) {
+                        user.image = data.avatar;
+                    }
                     await user.save();
                     resolve({
                         errCode: 0,

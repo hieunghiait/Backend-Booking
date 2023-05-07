@@ -68,42 +68,43 @@ let getUserInfoById = (userId) => {
     })
 }
 let updateUserData = (data) => {
-    return new Promise(async (reslove, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
-            //Truy van ra 1 dong du lieu
             let user = await db.User.findOne({
                 where: { id: data.id }
-            })
+            });
             if (user) {
                 user.firstName = data.firstName;
                 user.lastName = data.lastName;
                 user.address = data.address;
-                //Save into database
+                console.log('check user:', user);
                 await user.save();
                 let allUsers = await db.User.findAll();
-                reslove(allUsers);
+                resolve(allUsers);
             } else {
-                reslove();
+                reject(new Error("User not found"));
             }
-        } catch (e) {
-            console.log(e);
+        } catch (error) {
+            console.error(error);
+            reject(error);
         }
-    })
+    }).catch((error) => {
+        console.error(error);
+        // Handle the error here
+    });
 }
-//Create function deleteUserById 
+
 let deleteUserById = (userId) => {
-    return new Promise(async (reslove, request) => {
+    return new Promise(async (reslove, reject) => {
         try {
-            //Find 
             let user = await db.User.findOne({
                 where: { id: userId }
-            })
-            if (user) {
-                //Delete
-                await user.destroy();
+            });
+            if (!user) {
+                return reslove('User not found')
             }
-            //exit 
-            reslove(); //return;
+            await user.destroy();
+            reslove('User deleted successfully');
         } catch (e) {
             reject(e);
         }
@@ -116,6 +117,5 @@ module.exports = {
     getAllUser: getAllUser,
     getUserInfoById: getUserInfoById,
     updateUserData: updateUserData,
-    //export function
     deleteUserById: deleteUserById,
 }

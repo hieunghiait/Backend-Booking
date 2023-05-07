@@ -24,7 +24,7 @@ let getCRUD = (req, res) => {
 let postCRUD = async (req, res) => {
     let messenger = await CRUDService.createNewUser(req.body);
     console.log(messenger);
-    return res.send('post crud from server');
+    return res.send('Tạo mới user thành công');
 }
 let displayGetCRUD = async (req, res) => {
     let data = await CRUDService.getAllUser();
@@ -60,18 +60,24 @@ let putCRUD = async (req, res) => {
         dataTable: allUsers
     })
 }
-//Create function deleteCRUD 
+/**
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
 let deleteCRUD = async (req, res) => {
-    //get user id 
     let id = req.query.id;
-    //If userId founded 
     if (id) {
-        //call funtuin deleteUserById from CRUDService 
-        await CRUDService.deleteUserById(id);
-        // Return string sucessfully
+        try {
+            await CRUDService.deleteUserById(id);
+            return res.status(200).send('User deleted successfully')
+        } catch (error) {
+            console.log(error)
+        }
         return res.send('Delete user sucessfully')
     } else {
-        return res.send('User not found')
+        return res.status(400).send('User ID not found')
     }
 }
 module.exports = {

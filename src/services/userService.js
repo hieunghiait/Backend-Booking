@@ -1,7 +1,12 @@
+import { emit } from "nodemon";
 import db from "../models/index";
-import bcrypt, { hash } from 'bcryptjs';
+import bcrypt, { encodeBase64, hash } from 'bcryptjs';
 const salt = bcrypt.genSaltSync(10);
-
+/**
+ * Hàm dùng để mã hóa password
+ * @param {*} password 
+ * @returns trả về chuỗi password đã được mã hóa
+ */
 let hashUserPassword = (password) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -13,7 +18,7 @@ let hashUserPassword = (password) => {
     })
 }
 /**
- * API đăng nhập
+ * Hàm xử lý đăng nhập
  * @param {*} email đăng nhập với tham số là email
  * @param {*} password đăng nhập với tham số là password
  * @returns trả về object JSON nếu lấy được đúng email và password trong database
@@ -54,30 +59,33 @@ let handleUserLogin = (email, password) => {
         }
     })
 }
+/**
+ * Hàm dùng để kiểm tra email có tồn tại trong db
+ * @param {*} userEmail 
+ * @returns trả về true nếu email đã tồn tại trong db ngược lại trả về false
+ */
 let checkUserEmail = (userEmail) => {
     return new Promise(async (resolve, reject) => {
         try {
-            // Try to find a user in the database with the specified email
             let user = await db.User.findOne({
                 where: { email: userEmail }
             });
-
-            // Check if a user was found
+            // Check nếu user rỗng
             if (user) {
-                // Resolve the promise with true if a user was found
+                //Trả về true nếu email có trong db
                 resolve(true);
             } else {
-                // Otherwise, resolve the promise with false
+                //Trả về false nếu email có trong db
                 resolve(false);
             }
         } catch (e) {
-            // If there was an error, reject the promise with the error message
+            console.log(e)
             reject(e);
         }
     });
 };
 /**
- * 
+ * Hàm có chức lấy thông tin người dùng
  * @param {*} userId 
  * @returns Return about all user in database if type = all else return record user with id specify 
  */
@@ -108,7 +116,11 @@ let getAllUsers = (userId) => {
         }
     })
 }
-
+/**
+ * Hàm có chức năng tạo mới 1 người dùng
+ * @param {*} data 
+ * @returns 
+ */
 let createNewUser = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -130,38 +142,60 @@ let createNewUser = (data) => {
                     phonenumber: data.phonenumber,
                     gender: data.gender === '1' ? true : false,
                     roleId: data.roleId,
-                })
-                resolve({
-                    errCode: 0,
-                    errMessage: 'OK',
-                })
+                    positionId: data.positionId,
+                    image: data.avatar
+                });
+
+                // const userObject = {
+                //     email: user.email,
+                // }
+                // const token = jwt.sign(userObject, '123123');
+                // resolve({
+                //     errCode: 0,
+                //     errMessage: 'OK',
+                //     token: token
+                // })
             }
         } catch (e) {
+            console.log(e)
             reject(e);
         }
     })
 }
-
+/**
+ * Hàm chức năng xóa người dùng với id cụ thể
+ * @param {*} userId 
+ * @returns 
+ */
 let deleteUser = (userId) => {
     return new Promise(async (resolve, reject) => {
-        let foundUser = await db.User.findOne({
-            where: { id: userId }
-        })
-        if (!foundUser) {
-            resolve({
-                errCode: 2,
-                errMessage: `The user isn't exist`
+        try {
+            let foundUser = await db.User.findOne({
+                where: { id: userId }
             })
+            if (!foundUser) {
+                resolve({
+                    errCode: 2,
+                    errMessage: `The user isn't exist`
+                })
+            }
+            await db.User.destroy({
+                where: { id: userId }
+            })
+            resolve({
+                errCode: 0,
+                errMessage: `The user is deleted`
+            })
+        } catch (e) {
+            reject(e)
         }
-        await db.User.destroy({
-            where: { id: userId }
-        })
-        resolve({
-            errCode: 0,
-            errMessage: `The user is deleted`
-        })
     })
 }
+/**
+ * Hàm xử lý cập nhật thông tin người dùng với id cụ thể
+ * @param {object} data 
+ * @returns 
+ */
 let updateUserData = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -180,6 +214,8 @@ let updateUserData = (data) => {
                     user.firstName = data.firstName;
                     user.lastName = data.lastName;
                     user.address = data.address;
+                    user.roleId = data.roleId;
+                    user.positionId = data.positionId;
                     await user.save();
                     resolve({
                         errCode: 0,
@@ -197,6 +233,11 @@ let updateUserData = (data) => {
         }
     })
 }
+/**
+ * Hàm xử lý lấy thông tin từ bảng allCode
+ * @param {object} typeInput 
+ * @returns trả về object chứa data trong bảng allCode hoặc trả về lỗi
+ */
 let getAllCodeService = (typeInput) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -214,16 +255,16 @@ let getAllCodeService = (typeInput) => {
                 res.data = allcode;
                 resolve(res);
             }
-        } catch (exception) {
-            reject(exception)
+        } catch (e) {
+            reject(e)
         }
     })
 }
+
 module.exports = {
     handleUserLogin: handleUserLogin,
     getAllUsers: getAllUsers,
     createNewUser: createNewUser,
     deleteUser: deleteUser,
     updateUserData: updateUserData,
-    getAllCodeService: getAllCodeService,
 }

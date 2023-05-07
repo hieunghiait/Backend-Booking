@@ -1,10 +1,15 @@
-import userService from "../services/userService";
+const jwt = require('jsonwebtoken');
 
+import userService from "../services/userService";
+/**
+ * Hàm dùng để xử lý đăng nhập gồm email và mật khẩu
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
 let handleLogin = async (req, res) => {
     let email = req.body.email;
-    // console.log('your email: ' + email)
     let password = req.body.password;
-    //check email user exist 
     //compare password 
     //return userInfor
     //Access_Token: JWT 
@@ -15,8 +20,11 @@ let handleLogin = async (req, res) => {
         })
     }
     let userData = await userService.handleUserLogin(email, password);
-
     console.log(userData)
+    // if (userData.errCode === 0)
+    // {
+    //     const token = jwt.sign()
+    // }
     return res.status(200).json({
 
         // errCode: 0,
@@ -27,7 +35,12 @@ let handleLogin = async (req, res) => {
         user: userData.user ? userData.user : {}
     })
 }
-
+/**
+ * Hàm dùng để xử lý lấy thông tin người dùng (id hoặc tất cả)
+ * @param {object} req 
+ * @param {object} res 
+ * @returns 
+ */
 let handleGetAllUsers = async (req, res) => {
     let id = req.query.id;
     if (!id || id.trim() === '') {
@@ -47,8 +60,8 @@ let handleGetAllUsers = async (req, res) => {
 }
 /**
  * Xử lý tạo mới một user.
- * @param {Object} req - Đối tượng biểu diễn cho HTTP request
- * @param {Object} res - Đối tượng biểu diễn cho HTTP response
+ * @param {Object} req
+ * @param {Object} res 
  */
 let handleCreateNewUser = async (req, res) => {
     let message = await userService.createNewUser(req.body);
@@ -56,20 +69,19 @@ let handleCreateNewUser = async (req, res) => {
 }
 /**
  * Xử lý cập nhật thông tin người dùng.
- * @param {Object} req - Đối tượng biểu diễn cho HTTP request
- * @param {Object} res - Đối tượng biểu diễn cho HTTP response
+ * @param {Object} req
+ * @param {Object} res
  */
-
 let handleEditUser = async (req, res) => {
     let data = req.body;
     let message = await userService.updateUserData(data);
     return res.status(200).json(message)
 }
 /**
- * This is a function that handles the deletion of a user.
- * @param {object} req - The request object, which contains the data sent by the client.
- * @param {object} res - The response object, which is used to send a response back to the client.
- * @returns {object} - The result message or an error response with a status code and error message.
+ * Hàm dùng để xử lý xóa người dùng với id được chỉ định
+ * @param {object} req 
+ * @param {object} res
+ * @returns {object}
  */
 let handleDeleteUser = async (req, res) => {
     if (!(req.body.id)) {
@@ -81,6 +93,12 @@ let handleDeleteUser = async (req, res) => {
     let message = await userService.deleteUser(req.body.id);
     return res.status(200).json(message);
 }
+/**
+ * Hàm xử lý lấy dữ liệu từ bảng allcode
+ * @param {*} req 
+ * @param {*} res 
+ * @returns trả về object chứa các field của bảng allcode
+ */
 let getAllCode = async (req, res) => {
     try {
         let data = await userService.getAllCodeService(req.query.type);
@@ -93,11 +111,12 @@ let getAllCode = async (req, res) => {
         });
     }
 }
+
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,
     handleCreateNewUser: handleCreateNewUser,
     handleEditUser: handleEditUser,
     handleDeleteUser: handleDeleteUser,
-    getAllCode: getAllCode,
+    getAllCode: getAllCode
 }

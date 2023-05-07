@@ -9,13 +9,19 @@ let getTopDoctorHome = (limit) => {
         try {
             let users = await db.User.findAll({
                 limit: limit,
+                where: { roleId: 'R2' },
                 //Sắp xếp theo ngày tạo giảm dần
                 order: [['createdAt', 'DESC']],
                 //Loại bỏ trường password
                 attributes: {
                     exclude: ['password', 'image']
                 },
-                // raw: true
+                include: [
+                    { module: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
+                    { module: db.Allcode, as: 'genderData', attributes: ['valueEn, valueVi'] }
+                ],
+                raw: true,
+                nest: true
             })
             resolve({
                 errCode: 0,

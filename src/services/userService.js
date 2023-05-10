@@ -121,10 +121,21 @@ let getAllUsers = (userId) => {
  * @param {*} data 
  * @returns 
  */
+const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+};
 let createNewUser = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            //validate email 
+            const isValidEmail = validateEmail(data.email);
+            if (!isValidEmail) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Invalid email address',
+                });
+                return;
+            }
             let check = await checkUserEmail(data.email);
             if (check === true) {
                 resolve({
@@ -144,24 +155,49 @@ let createNewUser = (data) => {
                     roleId: data.roleId,
                     positionId: data.positionId,
                     image: data.avatar
-                });
-
-                // const userObject = {
-                //     email: user.email,
-                // }
-                // const token = jwt.sign(userObject, '123123');
-                // resolve({
-                //     errCode: 0,
-                //     errMessage: 'OK',
-                //     token: token
-                // })
+                })
             }
-        } catch (e) {
-            console.log(e)
-            reject(e);
+            resolve({
+                errCode: 0,
+                errMessage: 'User created successfully',
+            })
+        } catch (exception) {
+            console.log(exception)
+            reject(exception);
         }
     })
 }
+// let createNewUser = async (data) => {
+//     try {
+//         const emailInUse = await checkUserEmail(data.email);
+//         if (emailInUse) {
+//             return {
+//                 errCode: 1,
+//                 errMessage: 'Your email is already in use. Please try another email.',
+//             };
+//         }
+
+//         const hashedPassword = await hashUserPassword(data.password);
+//         const userData = {
+//             email: data.email,
+//             password: hashedPassword,
+//             firstName: data.firstName,
+//             lastName: data.lastName,
+//             address: data.address,
+//             phoneNumber: data.phoneNumber,
+//             gender: data.gender === 'male' ? true : false,
+//             roleId: data.roleId,
+//             positionId: data.positionId,
+//             image: data.avatar,
+//         };
+//         const createdUser = await db.User.create(userData);
+
+//         return createdUser;
+//     } catch (error) {
+//         console.error(error);
+//         throw error;
+//     }
+// }
 /**
  * Hàm chức năng xóa người dùng với id cụ thể
  * @param {*} userId 

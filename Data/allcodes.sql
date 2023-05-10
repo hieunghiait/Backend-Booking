@@ -17,9 +17,9 @@ INSERT INTO ALLCODES (ALLCODES.type,ALLCODES.keyMap, ALLCODES.valueEn, ALLCODES.
 INSERT INTO ALLCODES (ALLCODES.type,ALLCODES.keyMap, ALLCODES.valueEn, ALLCODES.valueVi) values ('TIME','T7','3:00 PM - 4:00 PM', '15:00 - 16:00' ); 										
 INSERT INTO ALLCODES (ALLCODES.type,ALLCODES.keyMap, ALLCODES.valueEn, ALLCODES.valueVi) values ('TIME','T8','4:00 PM - 5:00 PM', '16:00 - 17:00' ); 										
 										
-INSERT INTO ALLCODES (ALLCODES.type,ALLCODES.keyMap, ALLCODES.valueEn, ALLCODES.valueVi) values ('POSITION','P0','None', 'Bác sĩ' ); 										
+INSERT INTO ALLCODES (ALLCODES.type,ALLCODES.keyMap, ALLCODES.valueEn, ALLCODES.valueVi) values ('POSITION','P0','Doctor', 'Bác sĩ' ); 										
 INSERT INTO ALLCODES (ALLCODES.type,ALLCODES.keyMap, ALLCODES.valueEn, ALLCODES.valueVi) values ('POSITION','P1','Master', 'Thạc sĩ' ); 										
-INSERT INTO ALLCODES (ALLCODES.type,ALLCODES.keyMap, ALLCODES.valueEn, ALLCODES.valueVi) values ('POSITION','P2','Doctor', 'Tiến sĩ' ); 										
+INSERT INTO ALLCODES (ALLCODES.type,ALLCODES.keyMap, ALLCODES.valueEn, ALLCODES.valueVi) values ('POSITION','P2','D', 'Tiến sĩ' ); 										
 INSERT INTO ALLCODES (ALLCODES.type,ALLCODES.keyMap, ALLCODES.valueEn, ALLCODES.valueVi) values ('POSITION','P3','Associate Professor', 'Phó giáo sư' ); 										
 INSERT INTO ALLCODES (ALLCODES.type,ALLCODES.keyMap, ALLCODES.valueEn, ALLCODES.valueVi) values ('POSITION','P4','Professor', 'Giáo sư' ); 										
 										

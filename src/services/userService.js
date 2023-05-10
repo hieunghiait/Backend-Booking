@@ -122,13 +122,25 @@ let getAllUsers = (userId) => {
  * @returns 
  */
 const validateEmail = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const regex = /^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})$/;
     return regex.test(email);
+};
+const validatePhoneNumber = (phoneNumber) => {
+    const regex = /(((\+|)84)|0)(3|5|7|8|9)+([0-9]{8})\b/;
+    return regex.test(phoneNumber);
 };
 let createNewUser = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
+            if (!data.email || !data.password || !data.firstName || !data.lastName || !data.phoneNumber || !data.address || !data.gender) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required fields"
+                });
+                return;
+            }
             const isValidEmail = validateEmail(data.email);
+            const isValidPhoneNumber = validatePhoneNumber(data.phoneNumber);
             if (!isValidEmail) {
                 resolve({
                     errCode: 1,
@@ -136,6 +148,14 @@ let createNewUser = (data) => {
                 });
                 return;
             }
+            if (!isValidPhoneNumber) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Invalid phone number',
+                });
+                return;
+            }
+
             let check = await checkUserEmail(data.email);
             if (check === true) {
                 resolve({
@@ -150,7 +170,7 @@ let createNewUser = (data) => {
                     firstName: data.firstName,
                     lastName: data.lastName,
                     address: data.address,
-                    phonenumber: data.phonenumber,
+                    phoneNumber: data.phoneNumber,
                     gender: data.gender === '1' ? true : false,
                     roleId: data.roleId,
                     positionId: data.positionId,
@@ -167,37 +187,6 @@ let createNewUser = (data) => {
         }
     })
 }
-// let createNewUser = async (data) => {
-//     try {
-//         const emailInUse = await checkUserEmail(data.email);
-//         if (emailInUse) {
-//             return {
-//                 errCode: 1,
-//                 errMessage: 'Your email is already in use. Please try another email.',
-//             };
-//         }
-
-//         const hashedPassword = await hashUserPassword(data.password);
-//         const userData = {
-//             email: data.email,
-//             password: hashedPassword,
-//             firstName: data.firstName,
-//             lastName: data.lastName,
-//             address: data.address,
-//             phoneNumber: data.phoneNumber,
-//             gender: data.gender === 'male' ? true : false,
-//             roleId: data.roleId,
-//             positionId: data.positionId,
-//             image: data.avatar,
-//         };
-//         const createdUser = await db.User.create(userData);
-
-//         return createdUser;
-//     } catch (error) {
-//         console.error(error);
-//         throw error;
-//     }
-// }
 /**
  * Hàm chức năng xóa người dùng với id cụ thể
  * @param {*} userId 
@@ -235,7 +224,7 @@ let deleteUser = (userId) => {
 let updateUserData = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (isNaN(data.id) || !data.id || !data.firstName || !data.lastName || !data.address) {
+            if (!Number.isInteger(Number(data.id)) || !data.firstName || !data.lastName || !data.address) {
                 resolve({
                     errCode: 2,
                     errMessage: 'Missing require parameters',
@@ -265,7 +254,7 @@ let updateUserData = (data) => {
                 } else {
                     resolve({
                         errCode: 1,
-                        message: `User's not found !`
+                        message: `No user found with ID ${data.id}`
                     });
                 }
             }

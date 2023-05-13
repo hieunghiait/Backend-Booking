@@ -4,7 +4,7 @@ import db from "../models/index";
  * @param {*} limit 
  * @returns 
  */
-let getTopDoctorHome = (limit) => {
+let getTopDoctorHomeService = (limit) => {
     return new Promise(async (resolve, reject) => {
         try {
             let users = await db.User.findAll({
@@ -17,8 +17,8 @@ let getTopDoctorHome = (limit) => {
                     exclude: ['password', 'image']
                 },
                 include: [
-                    { module: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
-                    { module: db.Allcode, as: 'genderData', attributes: ['valueEn, valueVi'] }
+                    { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
+                    { model: db.Allcode, as: 'genderData', attributes: ['valueEn, valueVi'] }
                 ],
                 raw: true,
                 nest: true
@@ -48,16 +48,17 @@ let getAllDoctorsService = () => {
  * @param {object} inputData 
  * @returns 
  */
-let postInforDoctorService = (inputData) => {
+let saveDetailInformationDoctor = (inputData) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!inputData.id || inputData.contentHTML || inputData.contentMarkdown) {
+            1
+            if (!inputData.id || !inputData.contentHTML || !inputData.contentMarkdown) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameter',
                 })
             } else {
-                await db.Markdown.save({
+                await db.Markdown.create({
                     contentHTML: inputData.contentHTML,
                     contentMarkdown: inputData.contentMarkdown,
                     description: inputData.description,
@@ -73,7 +74,42 @@ let postInforDoctorService = (inputData) => {
         }
     })
 }
+let getDetailDoctorById = (inputId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!inputId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter'
+                })
+            } else {
+                let data = await db.User.findOne({
+                    where: {
+                        id: inputId
+                    },
+                    attributes: {
+                        exclude: ['password', 'image']
+                    },
+                    include: [
+                        { model: db.Markdown }
+                    ],
+                    raw: true,
+                    nest: true
+                })
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+        } catch (error) {
+            console.log(error)
+            reject(error)
+        }
+    })
+}
 module.exports = {
-    getTopDoctorHome: getTopDoctorHome,
-    getAllDoctorsService: getAllDoctorsService
+    getTopDoctorHomeService: getTopDoctorHomeService,
+    getAllDoctorsService: getAllDoctorsService,
+    saveDetailInformationDoctor: saveDetailInformationDoctor,
+    getDetailDoctorById, getDetailDoctorById,
 }

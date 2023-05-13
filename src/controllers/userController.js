@@ -1,6 +1,9 @@
 const jwt = require('jsonwebtoken');
-
+const salt = bcrypt.genSaltSync(10);
+import user from "../models/user";
 import userService from "../services/userService";
+import bcrypt, { encodeBase64, hash } from 'bcryptjs';
+import db from "../models/index";
 /**
  * Hàm dùng để xử lý đăng nhập gồm email và mật khẩu
  * @param {*} req 
@@ -26,14 +29,30 @@ let handleLogin = async (req, res) => {
     //     const token = jwt.sign()
     // }
     return res.status(200).json({
-
-        // errCode: 0,
-        // message: 'Tui ten nghia',
-        // yourEmail: email,
         errCode: userData.errCode,
         message: userData.errMessage,
         user: userData.user ? userData.user : {}
     })
+}
+let handleRegister = async (req, res) => {
+    try {
+        let email = req.body.id;
+        let password = req.body.password;
+        let firstName = req.body.firstName;
+        let lastName = req.body.lastName;
+        let address = req.body.address;
+        if (!(email && password && firstName && lastName && address)) {
+            res.status(400).send("All input is required");
+        }
+        const oldUser = await db.User.findOne({
+            email: email
+        })
+        if (oldUser) {
+            return res.status(409).send("User Already Exist. Please Login");
+        }
+    } catch (error) {
+        console.log(error)
+    }
 }
 /**
  * Hàm dùng để xử lý lấy thông tin người dùng (id hoặc tất cả)
@@ -64,8 +83,13 @@ let handleGetAllUsers = async (req, res) => {
  * @param {Object} res 
  */
 let handleCreateNewUser = async (req, res) => {
-    let message = await userService.createNewUser(req.body);
-    return res.status(200).json(message);
+    try {
+        let message = await userService.createNewUser(req.body);
+        return res.status(200).json(message);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'An error occurred while creating a new user.' });
+    }
 }
 /**
  * Xử lý cập nhật thông tin người dùng.
@@ -85,13 +109,21 @@ let handleEditUser = async (req, res) => {
  */
 let handleDeleteUser = async (req, res) => {
     if (!(req.body.id)) {
-        return res.status(200).json({
+        return res.status(400).json({
             errCode: 1,
             errMessage: 'Missing required parameters!'
+        });
+    }
+    try {
+        let message = await userService.deleteUser(req.body.id);
+        return res.status(200).json(message);
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            error: 2,
+            errMessage: 'Internal server error'
         })
     }
-    let message = await userService.deleteUser(req.body.id);
-    return res.status(200).json(message);
 }
 /**
  * Hàm xử lý lấy dữ liệu từ bảng allcode
@@ -104,7 +136,7 @@ let getAllCode = async (req, res) => {
         let data = await userService.getAllCodeService(req.query.type);
         return res.status(200).json(data);
     } catch (e) {
-        console.log('Get allcode error: ', e);
+        console.log('Get all code error: ', e)
         return res.status(200).json({
             errCode: -1,
             errMessage: 'Error from server'
@@ -118,5 +150,6 @@ module.exports = {
     handleCreateNewUser: handleCreateNewUser,
     handleEditUser: handleEditUser,
     handleDeleteUser: handleDeleteUser,
-    getAllCode: getAllCode
+    getAllCode: getAllCode,
+    handleRegister, handleRegister
 }

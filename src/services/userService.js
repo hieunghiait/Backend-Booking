@@ -1,6 +1,8 @@
 import { emit } from "nodemon";
 import db from "../models/index";
 import bcrypt, { encodeBase64, hash } from 'bcryptjs';
+import user from "../models/user";
+const jwt = require('jsonwebtoken')
 const salt = bcrypt.genSaltSync(10);
 /**
  * Hàm dùng để mã hóa password
@@ -30,7 +32,7 @@ let handleUserLogin = (email, password) => {
             let isExist = await checkUserEmail(email);
             if (isExist) {
                 let user = await db.User.findOne({
-                    attributes: ['email', 'roleId', 'password', 'firstName', 'lastName'],
+                    attributes: ['email', 'roleId', 'password', 'firstName', 'lastName', 'token'],
                     where: { email: email },
                     raw: true
                 });
@@ -38,9 +40,12 @@ let handleUserLogin = (email, password) => {
                     let check = await bcrypt.compareSync(password, user.password);
                     if (check) {
                         userData.errCode = 0;
-                        userData.errMessage = 'OK';
+                        userData.errMessage = 'Login sucessfully';
                         delete user.password;
                         userData.user = user;
+                        userData.token = jwt.sign({ email }, 'hieunghia', {
+                            expiresIn: "2h",
+                        });
                     } else {
                         userData.errCode = 3;
                         userData.errMessage = 'Wrong password';
@@ -132,7 +137,7 @@ const validatePhoneNumber = (phoneNumber) => {
 let createNewUser = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.email || !data.password || !data.firstName || !data.lastName || !data.phoneNumber || !data.address || !data.gender) {
+            if (!data.email || !data.password || !data.firstName || !data.lastName || !data.phoneNumber || !data.address) {
                 resolve({
                     errCode: 1,
                     errMessage: "Missing required fields"
@@ -140,7 +145,7 @@ let createNewUser = (data) => {
                 return;
             }
             const isValidEmail = validateEmail(data.email);
-            const isValidPhoneNumber = validatePhoneNumber(data.phoneNumber);
+            // const isValidPhoneNumber = validatePhoneNumber(data.phoneNumber);
             if (!isValidEmail) {
                 resolve({
                     errCode: 1,
@@ -148,13 +153,13 @@ let createNewUser = (data) => {
                 });
                 return;
             }
-            if (!isValidPhoneNumber) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Invalid phone number',
-                });
-                return;
-            }
+            // if (!isValidPhoneNumber) {
+            //     resolve({
+            //         errCode: 1,
+            //         errMessage: 'Invalid phone number',
+            //     });
+            //     return;
+            // }
 
             let check = await checkUserEmail(data.email);
             if (check === true) {
@@ -163,8 +168,11 @@ let createNewUser = (data) => {
                     errMessage: 'Your email is already in use, Please try another email',
                 })
             } else {
+                const tokenUser = jwt.sign({ email: data.email }, 'hieunghia', {
+                    expiresIn: '2h',
+                })
                 let hashPasswordFromBcrypt = await hashUserPassword(data.password);
-                await db.User.create({
+                const user = await db.User.create({
                     email: data.email,
                     password: hashPasswordFromBcrypt,
                     firstName: data.firstName,
@@ -174,8 +182,12 @@ let createNewUser = (data) => {
                     gender: data.gender === '1' ? true : false,
                     roleId: data.roleId,
                     positionId: data.positionId,
-                    image: data.avatar
+                    image: data.avatar,
+                    token: tokenUser
                 })
+
+                // console.log('log token: ', tokenUser)
+                // user.token = tokenUser;
             }
             resolve({
                 errCode: 0,
@@ -212,6 +224,7 @@ let deleteUser = (userId) => {
                 errMessage: `The user is deleted`
             })
         } catch (e) {
+            console.log(e)
             reject(e)
         }
     })
@@ -224,40 +237,41 @@ let deleteUser = (userId) => {
 let updateUserData = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
+            //data.id || data.roleId || positionId || data.gender // 60
             if (!Number.isInteger(Number(data.id)) || !data.firstName || !data.lastName || !data.address) {
                 resolve({
                     errCode: 2,
                     errMessage: 'Missing require parameters',
                 })
-            } else {
-                // Query the database to find the user with matching id
-                let user = await db.User.findOne({
-                    where: { id: data.id },
-                    raw: false
-                })
-                if (user) {
-                    user.firstName = data.firstName;
-                    user.lastName = data.lastName;
-                    user.address = data.address;
-                    user.roleId = data.roleId;
-                    user.positionId = data.positionId;
-                    user.gender = data.gender;
-                    user.phonenumber = data.phonenumber;
-                    if (data.avatar) {
-                        user.image = data.avatar;
-                    }
-                    await user.save();
-                    resolve({
-                        errCode: 0,
-                        message: 'Update the user success'
-                    })
-                } else {
-                    resolve({
-                        errCode: 1,
-                        message: `No user found with ID ${data.id}`
-                    });
-                }
             }
+            // Query the database to find the user with matching id
+            let user = await db.User.findOne({
+                where: { id: data.id },
+                raw: false
+            })
+            if (user) {
+                user.firstName = data.firstName;
+                user.lastName = data.lastName;
+                user.address = data.address;
+                user.roleId = data.roleId;
+                user.positionId = data.positionId;
+                user.gender = data.gender;
+                user.phonenumber = data.phonenumber;
+                if (data.avatar) {
+                    user.image = data.avatar;
+                }
+                await user.save();
+                resolve({
+                    errCode: 0,
+                    message: 'User update successful'
+                })
+            } else {
+                resolve({
+                    errCode: 1,
+                    message: `No user found with ID ${data.id}`
+                });
+            }
+
         } catch (e) {
             reject(e)
         }
@@ -297,4 +311,5 @@ module.exports = {
     createNewUser: createNewUser,
     deleteUser: deleteUser,
     updateUserData: updateUserData,
+    getAllCodeService: getAllCodeService,
 }

@@ -4,7 +4,7 @@ import viewEngie from "./config/viewEngine";
 import initWebRoutes from "./route/web";
 import connectDB from "./config/connectDB";
 import cors from 'cors';
-
+const auth = require("./middleware/auth");
 require('dotenv').config();
 let app = express();
 app.use(cors({ origin: true, credentials: true }));
@@ -22,3 +22,7 @@ let port = process.env.PORT || 8080;
 app.listen(port, () => {
     console.log('Backend Nodejs is running on the port: ' + port);
 });
+
+app.post("/welcome", auth, (req, res) => {
+    res.send(200).send("Hello")
+})

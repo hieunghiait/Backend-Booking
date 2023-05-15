@@ -4,12 +4,7 @@ import user from "../models/user";
 import userService from "../services/userService";
 import bcrypt, { encodeBase64, hash } from 'bcryptjs';
 import db from "../models/index";
-/**
- * Hàm dùng để xử lý đăng nhập gồm email và mật khẩu
- * @param {*} req 
- * @param {*} res 
- * @returns 
- */
+
 let handleLogin = async (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
@@ -54,12 +49,6 @@ let handleRegister = async (req, res) => {
         console.log(error)
     }
 }
-/**
- * Hàm dùng để xử lý lấy thông tin người dùng (id hoặc tất cả)
- * @param {object} req 
- * @param {object} res 
- * @returns 
- */
 let handleGetAllUsers = async (req, res) => {
     let id = req.query.id;
     if (!id || id.trim() === '') {
@@ -77,38 +66,26 @@ let handleGetAllUsers = async (req, res) => {
         users,
     })
 }
-/**
- * Xử lý tạo mới một user.
- * @param {Object} req
- * @param {Object} res 
- */
 let handleCreateNewUser = async (req, res) => {
     try {
         let message = await userService.createNewUser(req.body);
+        console.log('messenger: ', message);
         return res.status(200).json(message);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'An error occurred while creating a new user.' });
     }
 }
-/**
- * Xử lý cập nhật thông tin người dùng.
- * @param {Object} req
- * @param {Object} res
- */
 let handleEditUser = async (req, res) => {
     let data = req.body;
+    console.log(data);
     let message = await userService.updateUserData(data);
     return res.status(200).json(message)
 }
-/**
- * Hàm dùng để xử lý xóa người dùng với id được chỉ định
- * @param {object} req 
- * @param {object} res
- * @returns {object}
- */
+
 let handleDeleteUser = async (req, res) => {
-    if (!(req.body.id)) {
+    console.log('log', req.body.id);
+    if (!req.body.id) {
         return res.status(400).json({
             errCode: 1,
             errMessage: 'Missing required parameters!'
@@ -125,12 +102,6 @@ let handleDeleteUser = async (req, res) => {
         })
     }
 }
-/**
- * Hàm xử lý lấy dữ liệu từ bảng allcode
- * @param {*} req 
- * @param {*} res 
- * @returns trả về object chứa các field của bảng allcode
- */
 let getAllCode = async (req, res) => {
     try {
         let data = await userService.getAllCodeService(req.query.type);

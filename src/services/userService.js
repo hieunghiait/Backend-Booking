@@ -130,22 +130,25 @@ const validateEmail = (email) => {
     const regex = /^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})$/;
     return regex.test(email);
 };
-const validatePhoneNumber = (phoneNumber) => {
+const validatePhoneNumber = (phonenumber) => {
     const regex = /(((\+|)84)|0)(3|5|7|8|9)+([0-9]{8})\b/;
-    return regex.test(phoneNumber);
+    return regex.test(phonenumber);
 };
 let createNewUser = (data) => {
+    console.log('log data', data);
+    console.log('log phone: ', data.phonenumber);
+    console.log("log phoneNumber", data.phonenumber);
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.email || !data.password || !data.firstName || !data.lastName || !data.phoneNumber || !data.address) {
-                resolve({
-                    errCode: 1,
-                    errMessage: "Missing required fields"
-                });
-                return;
-            }
+            // if (!data.email || !data.password || !data.firstName || !data.lastName || !data.phonenumber || !data.address) {
+            //     resolve({
+            //         errCode: 1,
+            //         errMessage: "Missing required fields"
+            //     });
+            //     return;
+            // }
             const isValidEmail = validateEmail(data.email);
-            // const isValidPhoneNumber = validatePhoneNumber(data.phoneNumber);
+            const isValidPhoneNumber = validatePhoneNumber(data.phonenumber);
             if (!isValidEmail) {
                 resolve({
                     errCode: 1,
@@ -153,14 +156,13 @@ let createNewUser = (data) => {
                 });
                 return;
             }
-            // if (!isValidPhoneNumber) {
-            //     resolve({
-            //         errCode: 1,
-            //         errMessage: 'Invalid phone number',
-            //     });
-            //     return;
-            // }
-
+            if (!isValidPhoneNumber) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Invalid phone number',
+                });
+                return;
+            }
             let check = await checkUserEmail(data.email);
             if (check === true) {
                 resolve({
@@ -178,7 +180,7 @@ let createNewUser = (data) => {
                     firstName: data.firstName,
                     lastName: data.lastName,
                     address: data.address,
-                    phoneNumber: data.phoneNumber,
+                    phonenumber: data.phonenumber,
                     gender: data.gender === '1' ? true : false,
                     roleId: data.roleId,
                     positionId: data.positionId,
@@ -199,11 +201,7 @@ let createNewUser = (data) => {
         }
     })
 }
-/**
- * Hàm chức năng xóa người dùng với id cụ thể
- * @param {*} userId 
- * @returns 
- */
+
 let deleteUser = (userId) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -235,6 +233,9 @@ let deleteUser = (userId) => {
  * @returns 
  */
 let updateUserData = (data) => {
+    console.log('check data.id: ', data.id);
+    console.log('log data', data);
+    console.log('log phone: ', data.phonenumber);
     return new Promise(async (resolve, reject) => {
         try {
             //data.id || data.roleId || positionId || data.gender // 60
@@ -246,7 +247,7 @@ let updateUserData = (data) => {
             }
             // Query the database to find the user with matching id
             let user = await db.User.findOne({
-                where: { id: data.id },
+                where: { email: data.email },
                 raw: false
             })
             if (user) {

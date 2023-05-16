@@ -120,6 +120,7 @@ let getDetailDoctorById = (inputId) => {
     }
   });
 };
+
 module.exports = {
   getTopDoctorHomeService: getTopDoctorHomeService,
   getAllDoctorsService: getAllDoctorsService,

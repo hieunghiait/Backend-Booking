@@ -44,6 +44,12 @@ let postInforDoctor = async (req, res) => {
 };
 let getThongTinDoctorById = async (req, res) => {
   try {
+    if (!req.query.id) {
+      return res.status(400).json({
+        error: 3,
+        errMessage: "Missing request id",
+      })
+    }
     let info = await doctorService.getDetailDoctorById(req.query.id);
     return res.status(200).json(info);
   } catch (error) {

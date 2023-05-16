@@ -107,7 +107,8 @@ let getDetailDoctorById = (id) => {
                     },
                     //ignore 
                     attributes: {
-                        exclude: ["password", "image"],
+                        //bo truong image #69 
+                        exclude: ["password"],
                     },
                     include: [{
                         model: db.Markdown,
@@ -118,9 +119,16 @@ let getDetailDoctorById = (id) => {
                         as: "positionData",
                         attributes: ["valueEn", "valueVi"],
                     }],
-                    raw: true,
+                    //# 69
+                    raw: false,
                     nest: true,
                 })
+                if (data && data.image) {
+                    data.image = new Buffer(data.image, 'base64').toString('binary');
+                }
+                if (!data) {
+                    data = {};
+                }
                 resolve({
                     errCode: 0,
                     data: data,

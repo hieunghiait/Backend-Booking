@@ -1,10 +1,5 @@
 import doctorService from "../services/doctorService";
-/**
- *
- * @param {*} req
- * @param {*} res
- * @returns
- */
+
 let getTopDoctorHome = async (req, res) => {
   let limit = req.query.limit;
   if (!Number.isInteger(Number(limit))) {
@@ -21,12 +16,7 @@ let getTopDoctorHome = async (req, res) => {
     });
   }
 };
-/**
- *
- * @param {*} req
- * @param {*} res
- * @returns
- */
+
 let getAllDoctors = async (req, res) => {
   try {
     let doctors = await doctorService.getAllDoctorsService();
@@ -39,12 +29,7 @@ let getAllDoctors = async (req, res) => {
     });
   }
 };
-/**
- * Lưu thông tin của Bác sĩ
- * @param {*} req
- * @param {*} res
- * @returns JSON
- */
+
 let postInforDoctor = async (req, res) => {
   try {
     let respone = await doctorService.saveDetailInformationDoctor(req.body);

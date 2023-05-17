@@ -1,9 +1,5 @@
 import db from "../models/index";
-/**
- *
- * @param {*} limit
- * @returns
- */
+
 let getTopDoctorHomeService = (limit) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -15,7 +11,7 @@ let getTopDoctorHomeService = (limit) => {
                 order: [["createdAt", "DESC"]],
                 //Loại bỏ trường password
                 attributes: {
-                    exclude: ["password", "image"],
+                    exclude: ["password", "image"]
                 },
                 include: [
                     {
@@ -54,11 +50,7 @@ let getAllDoctorsService = () => {
         }
     });
 };
-/**
- *
- * @param {object} inputData
- * @returns
- */
+
 let saveDetailInformationDoctor = (inputData) => {
     return new Promise(async (resolve, reject) => {
         try {

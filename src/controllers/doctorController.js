@@ -2,11 +2,11 @@ import doctorService from "../services/doctorService";
 
 let getTopDoctorHome = async (req, res) => {
   let limit = req.query.limit;
-  if (!Number.isInteger(Number(limit))) {
+  if (!limit) {
     limit = 10; //mặc định set cứng gán 10
   }
   try {
-    let doctors = await doctorService.getTopDoctorHomeService(limit);
+    let doctors = await doctorService.getTopDoctorHomeService(+limit);
     return res.status(200).json(doctors);
   } catch (error) {
     console.log("log error: " + error);

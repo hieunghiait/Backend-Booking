@@ -68,16 +68,13 @@ let checkUserEmail = (userEmail) => {
       let user = await db.User.findOne({
         where: { email: userEmail },
       });
-      // Check nếu user rỗng
       if (user) {
-        //Trả về true nếu email có trong db
         resolve(true);
       } else {
-        //Trả về false nếu email có trong db
         resolve(false);
       }
     } catch (e) {
-      console.log(e);
+      console.log('Show log error: ' + e.message);
       reject(e);
     }
   });

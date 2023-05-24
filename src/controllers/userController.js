@@ -80,7 +80,7 @@ let handleEditUser = async (req, res) => {
 }
 
 let handleDeleteUser = async (req, res) => {
-    console.log('log', req.body.id);
+    console.log('Show log', req.body.id);
     if (!req.body.id) {
         return res.status(400).json({
             errCode: 1,

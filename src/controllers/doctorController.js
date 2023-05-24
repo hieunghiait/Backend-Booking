@@ -2,7 +2,8 @@ import doctorService from "../services/doctorService";
 
 let getTopDoctorHome = async (req, res) => {
   let limit = req.query.limit;
-  if (!limit) {
+  console.log('log data limit from controller', limit);
+  if (!Number.isInteger(Number(limit))) {
     limit = 10; //mặc định set cứng gán 10
   }
   try {
@@ -60,9 +61,23 @@ let getThongTinDoctorById = async (req, res) => {
     });
   }
 };
+let bulkCreateSchedule = async (req, res) => {
+  try {
+    let info = await doctorService.bulkCreateSChedule(req.body);
+    console.log('Show log data info: ' + info)
+    return res.status(200).json(info)
+  } catch (error) {
+    console.log('Show log error: ' + error)
+    return res.status(500).json({
+      error: -1,
+      errMessage: 'Internal Server Error',
+    })
+  }
+}
 module.exports = {
   getTopDoctorHome: getTopDoctorHome,
   getAllDoctors: getAllDoctors,
   postInforDoctor: postInforDoctor,
   getThongTinDoctorById: getThongTinDoctorById,
+  bulkCreateSchedule: bulkCreateSchedule,
 };

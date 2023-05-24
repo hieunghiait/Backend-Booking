@@ -4,11 +4,7 @@ import bcrypt, { encodeBase64, hash } from "bcryptjs";
 import user from "../models/user";
 const jwt = require("jsonwebtoken");
 const salt = bcrypt.genSaltSync(10);
-/**
- * Hàm dùng để mã hóa password
- * @param {*} password
- * @returns trả về chuỗi password đã được mã hóa
- */
+
 let hashUserPassword = (password) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -19,12 +15,7 @@ let hashUserPassword = (password) => {
     }
   });
 };
-/**
- * Hàm xử lý đăng nhập
- * @param {*} email đăng nhập với tham số là email
- * @param {*} password đăng nhập với tham số là password
- * @returns trả về object JSON nếu lấy được đúng email và password trong database
- */
+
 let handleUserLogin = (email, password) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -71,11 +62,6 @@ let handleUserLogin = (email, password) => {
     }
   });
 };
-/**
- * Hàm dùng để kiểm tra email có tồn tại trong db
- * @param {*} userEmail
- * @returns trả về true nếu email đã tồn tại trong db ngược lại trả về false
- */
 let checkUserEmail = (userEmail) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -96,11 +82,7 @@ let checkUserEmail = (userEmail) => {
     }
   });
 };
-/**
- * Hàm có chức lấy thông tin người dùng
- * @param {*} userId
- * @returns Return about all user in database if type = all else return record user with id specify
- */
+
 let getAllUsers = (userId) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -127,11 +109,7 @@ let getAllUsers = (userId) => {
     }
   });
 };
-/**
- * Hàm có chức năng tạo mới 1 người dùng
- * @param {*} data
- * @returns
- */
+
 const validateEmail = (email) => {
   const regex = /^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})$/;
   return regex.test(email);
@@ -141,9 +119,6 @@ const validatePhoneNumber = (phonenumber) => {
   return regex.test(phonenumber);
 };
 let createNewUser = (data) => {
-  console.log("log data", data);
-  console.log("log phone: ", data.phonenumber);
-  console.log("log phoneNumber", data.phonenumber);
   return new Promise(async (resolve, reject) => {
     try {
       // if (!data.email || !data.password || !data.firstName || !data.lastName || !data.phonenumber || !data.address) {
@@ -187,11 +162,11 @@ let createNewUser = (data) => {
           lastName: data.lastName,
           address: data.address,
           phonenumber: data.phonenumber,
-          gender: data.gender === "1" ? true : false,
-          roleId: data.roleId,
-          positionId: data.positionId,
-          image: data.avatar,
-          token: tokenUser,
+          // gender: data.gender === "1" ? true : false,
+          roleId: 'R2',
+          // positionId: data.positionId,
+          // image: data.avatar,
+          // token: tokenUser,
         });
 
         // console.log('log token: ', tokenUser)
@@ -233,11 +208,7 @@ let deleteUser = (userId) => {
     }
   });
 };
-/**
- * Hàm xử lý cập nhật thông tin người dùng với id cụ thể
- * @param {object} data
- * @returns
- */
+
 let updateUserData = (data) => {
   console.log("check data.id: ", data.id);
   console.log("log data", data);
@@ -289,11 +260,7 @@ let updateUserData = (data) => {
     }
   });
 };
-/**
- * Hàm xử lý lấy thông tin từ bảng allCode
- * @param {object} typeInput
- * @returns trả về object chứa data trong bảng allCode hoặc trả về lỗi
- */
+
 let getAllCodeService = (typeInput) => {
   return new Promise(async (resolve, reject) => {
     try {

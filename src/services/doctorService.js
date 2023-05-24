@@ -1,9 +1,13 @@
 import db from "../models/index";
+require('dotenv').config();
+import _ from 'lodash';
+const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 
 let getTopDoctorHomeService = (limit) => {
     return new Promise(async (resolve, reject) => {
+        console.log('log data limit  from docterSerivice: ', limit)
         try {
-            console.log("abc", limit);
+            console.log('log data limit: ', limit);
             let users = await db.User.findAll({
                 limit: limit,
                 where: { roleId: "R2" },
@@ -15,24 +19,21 @@ let getTopDoctorHomeService = (limit) => {
                 },
                 include: [
                     {
-                        model: db.Allcode,
-                        as: "positionData",
-                        attributes: ["valueEn", "valueVi"],
+                        model: db.Allcode, as: "positionData", attributes: ["valueEn", "valueVi"]
                     },
                     {
-                        model: db.Allcode,
-                        as: "genderData",
-                        attributes: ["valueEn, valueVi"],
-                    },
+                        model: db.Allcode, as: "genderData", attributes: ["valueEn", "valueVi"]
+                    }
                 ],
                 raw: true,
                 nest: true,
-            });
+            })
             resolve({
                 errCode: 0,
                 data: users,
             });
         } catch (error) {
+            console.log(error);
             reject(error);
         }
     });
@@ -54,9 +55,8 @@ let getAllDoctorsService = () => {
 let saveDetailInformationDoctor = (inputData) => {
     return new Promise(async (resolve, reject) => {
         try {
-            1;
             if (
-                !inputData.id ||
+                !inputData.doctorId ||
                 !inputData.contentHTML ||
                 !inputData.contentMarkdown ||
                 !inputData.action) {
@@ -91,6 +91,7 @@ let saveDetailInformationDoctor = (inputData) => {
                 });
             }
         } catch (error) {
+            console.log(error)
             reject(error);
         }
     });
@@ -147,10 +148,62 @@ let getDetailDoctorById = (id) => {
         }
     });
 };
-
+let bulkCreateSChedule = (data) => {
+    console.log('Show log data: ' + data)
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.arrSchedule || !data.doctorId || !data.formatedDate) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameters',
+                })
+            } else {
+                let schedule = data.arrSchedule;
+                if (schedule && schedule.length > 0) {
+                    schedule = schedule.map(item => {
+                        item.maxNumber = MAX_NUMBER_SCHEDULE;
+                        return item;
+                    })
+                }
+                console.log('log data schedule: ', schedule);
+                //get all existing data
+                let existing = await db.Schedule.findAll(
+                    {
+                        where: { doctorId: data.doctorId, date: data.formatedDate },
+                        attributes: ['timeType', 'date', 'doctorId', 'maxNumber'],
+                        raw: true
+                    }
+                );
+                //Convert date
+                if (existing && existing.length > 0) {
+                    existing = existing.map(item => {
+                        item.date == new Date(item.date).getTime();
+                        return time;
+                    })
+                }
+                //compare difference 
+                let toCreate = _.differenceWith(schedule, existing, (a, b) => {
+                    return a.timeType === b.timeType && a.date === b.date;
+                });
+                //create data
+                if (toCreate && toCreate.length > 0) {
+                    await db.Schedule.bulkCreate(toCreate);
+                }
+                resolve({
+                    errCode: 0,
+                    errMessage: 'OK',
+                })
+            }
+        } catch (error) {
+            console.log('Show log error: ' + error)
+            reject(error);
+        }
+    })
+}
 module.exports = {
     getTopDoctorHomeService: getTopDoctorHomeService,
     getAllDoctorsService: getAllDoctorsService,
     saveDetailInformationDoctor: saveDetailInformationDoctor,
     getDetailDoctorById: getDetailDoctorById,
+    bulkCreateSChedule: bulkCreateSChedule,
 };

@@ -5,9 +5,8 @@ import { request } from 'express';
 
 const salt = bcrypt.genSaltSync(10);
 let createNewUser = async (data) => {
-    return new Promise(async (reslove, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
-            //hash password
             let hashPasswordFromBcrypt = await hashUserPassword(data.password);
             await db.User.create({
                 email: data.email,
@@ -19,13 +18,12 @@ let createNewUser = async (data) => {
                 gender: data.gender === '1' ? true : false,
                 roleId: data.roleId,
             })
-            reslove("Create a new user successfully")
+            resolve("Create a new user successfully")
         } catch (e) {
             reject(e);
         }
     })
 }
-//hash password
 let hashUserPassword = (password) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -36,11 +34,10 @@ let hashUserPassword = (password) => {
         }
     })
 }
-//Lấy hết tất cả User 
 let getAllUser = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            //Lấy hết dữ liệu
+
             let users = db.User.findAll();
             raw: true,
                 //exit Promise

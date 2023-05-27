@@ -23,14 +23,7 @@ let handleUserLogin = (email, password) => {
       let isExist = await checkUserEmail(email);
       if (isExist) {
         let user = await db.User.findOne({
-          attributes: [
-            "email",
-            "roleId",
-            "password",
-            "firstName",
-            "lastName",
-            "token",
-          ],
+          attributes: ["email", "roleId", "password", "firstName", "lastName", "token",],
           where: { email: email },
           raw: true,
         });
@@ -74,7 +67,7 @@ let checkUserEmail = (userEmail) => {
         resolve(false);
       }
     } catch (e) {
-      console.log('Show log error: ' + e.message);
+      console.log('Show log error: ' + e);
       reject(e);
     }
   });
@@ -118,40 +111,45 @@ const validatePhoneNumber = (phonenumber) => {
 let createNewUser = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
-      // if (!data.email || !data.password || !data.firstName || !data.lastName || !data.phonenumber || !data.address) {
-      //     resolve({
-      //         errCode: 1,
-      //         errMessage: "Missing required fields"
-      //     });
-      //     return;
-      // }
+      if (!data.email || !data.password || !data.firstName || !data.lastName || !data.address) {
+        reject({
+          errCode: 1,
+          errMessage: "Missing required fields"
+        });
+      }
       const isValidEmail = validateEmail(data.email);
-      const isValidPhoneNumber = validatePhoneNumber(data.phonenumber);
+      // const isValidPhoneNumber = validatePhoneNumber(data.phonenumber);
       // if (!isValidEmail) {
       //     resolve({
-      //         errCode: 1,
+      //         errCode: 1,s
       //         errMessage: 'Invalid email address',
       //     });
       //     return;
       // }
-      if (!isValidPhoneNumber) {
+      /**if (!isValidPhoneNumber) {
         resolve({
           errCode: 1,
           errMessage: "Invalid phone number",
         });
         return;
-      }
-      let check = await checkUserEmail(data.email);
-      if (check === true) {
+      }**/
+      if (!isValidEmail) {
         resolve({
           errCode: 1,
-          errMessage: "Your email is already in use, Please try another email",
+          errMessage: 'Invalid email address',
+        });
+      }
+      const emailExists = await checkUserEmail(data.email);
+      if (emailExists) {
+        resolve({
+          errCode: 1,
+          errMessage: "Your email already exists in the database, Please try another email",
         });
       } else {
-        const tokenUser = jwt.sign({ email: data.email }, "hieunghia", {
+        /**const tokenUser = jwt.sign({ email: data.email }, "hieunghia", {
           expiresIn: "2h",
-        });
-        let hashPasswordFromBcrypt = await hashUserPassword(data.password);
+        });**/
+        const hashPasswordFromBcrypt = await hashUserPassword(data.password);
         const user = await db.User.create({
           email: data.email,
           password: hashPasswordFromBcrypt,
@@ -160,21 +158,18 @@ let createNewUser = (data) => {
           address: data.address,
           phonenumber: data.phonenumber,
           // gender: data.gender === "1" ? true : false,
+          gender: data.gender,
           roleId: 'R2',
-          // positionId: data.positionId,
-          // image: data.avatar,
-          // token: tokenUser,
+          positionId: data.positionId,
+          image: data.image,
         });
-
-        // console.log('log token: ', tokenUser)
-        // user.token = tokenUser;
       }
       resolve({
         errCode: 0,
-        errMessage: "User created successfully",
+        errMessage: "Create user successfully",
       });
     } catch (exception) {
-      console.log(exception);
+      console.log('Show log error createNewUserService: ', exception);
       reject(exception);
     }
   });
@@ -189,43 +184,35 @@ let deleteUser = (userId) => {
       if (!foundUser) {
         resolve({
           errCode: 2,
-          errMessage: `The user isn't exist`,
+          errMessage: `The user doesn't exist`,
+        });
+      } else {
+        await db.User.destroy({
+          where: { id: userId },
+        });
+        resolve({
+          errCode: 0,
+          errMessage: `The user is deleted`,
         });
       }
-      await db.User.destroy({
-        where: { id: userId },
-      });
-      resolve({
-        errCode: 0,
-        errMessage: `The user is deleted`,
-      });
     } catch (e) {
-      console.log(e);
+      console.log('Show log error deleteUserService: ', e);
       reject(e);
     }
   });
 };
 
 let updateUserData = (data) => {
-  console.log("check data.id: ", data.id);
-  console.log("log data", data);
-  console.log("log phone: ", data.phonenumber);
   return new Promise(async (resolve, reject) => {
     try {
-      //data.id || data.roleId || positionId || data.gender // 60
       if (
-        // !Number.isInteger(Number(data.)) ||
-        !data.email ||
-        !data.firstName ||
-        !data.lastName ||
-        !data.address
+        !data.email || !data.firstName || !data.lastName || !data.address
       ) {
         resolve({
           errCode: 2,
           errMessage: "Missing require parameters",
         });
       }
-      // Query the database to find the user with matching id
       let user = await db.User.findOne({
         where: { email: data.email },
         raw: false,
@@ -244,16 +231,17 @@ let updateUserData = (data) => {
         await user.save();
         resolve({
           errCode: 0,
-          message: "User update successful",
+          message: "User updated successfully",
         });
       } else {
         resolve({
           errCode: 1,
-          message: `No user found with ID ${data.id}`,
+          message: `No user found with email ${data.email}`,
         });
       }
-    } catch (e) {
-      reject(e);
+    } catch (error) {
+      console.log('Show log error', error);
+      reject(error);
     }
   });
 };

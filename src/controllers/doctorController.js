@@ -2,15 +2,14 @@ import doctorService from "../services/doctorService";
 
 let getTopDoctorHome = async (req, res) => {
   let limit = req.query.limit;
-  console.log('log data limit from controller', limit);
   if (!Number.isInteger(Number(limit))) {
-    limit = 10; //mặc định set cứng gán 10
+    limit = 10; //hard limit
   }
   try {
     let doctors = await doctorService.getTopDoctorHomeService(+limit);
     return res.status(200).json(doctors);
   } catch (error) {
-    console.log("log error: " + error);
+    console.log("Show log error: " + error);
     return res.status(200).json({
       errCode: -1,
       errMessage: "Error from server",
@@ -23,10 +22,10 @@ let getAllDoctors = async (req, res) => {
     let doctors = await doctorService.getAllDoctorsService();
     return res.status(200).json(doctors);
   } catch (error) {
-    console.log(error);
-    return res.status(200).json({
+    console.log('Show log getAllDoctors error: ' + error.message);
+    return res.status(500).json({
       errCode: -1,
-      errMessage: "Error from server",
+      errMessage: "Failed to retrieve doctors",
     });
   }
 };
@@ -55,7 +54,7 @@ let getThongTinDoctorById = async (req, res) => {
     return res.status(200).json(info);
   } catch (error) {
     console.log(error);
-    return res.status(400).json({
+    return res.status(500).json({
       error: -1,
       errMessage: "Error from the server",
     });
@@ -74,10 +73,24 @@ let bulkCreateSchedule = async (req, res) => {
     })
   }
 }
+let getScheduleByDate = async (req, res) => {
+  try {
+    let info = await doctorService.getScheduleByDateService(req.query.doctorId, req.query.date);
+    console.log('Show log data info: ' + info)
+    return res.status(200).json(info)
+  } catch (error) {
+    console.log('Show log error: ' + error)
+    return res.status(500).json({
+      error: -1,
+      errMessage: 'Internal Server Error',
+    })
+  }
+}
 module.exports = {
   getTopDoctorHome: getTopDoctorHome,
   getAllDoctors: getAllDoctors,
   postInforDoctor: postInforDoctor,
   getThongTinDoctorById: getThongTinDoctorById,
   bulkCreateSchedule: bulkCreateSchedule,
+  getScheduleByDate: getScheduleByDate,
 };

@@ -1,9 +1,13 @@
 const jwt = require('jsonwebtoken');
 const salt = bcrypt.genSaltSync(10);
+const multer = require('multer');
+const express = require('express');
+const app = express();
 import user from "../models/user";
 import userService from "../services/userService";
 import bcrypt, { encodeBase64, hash } from 'bcryptjs';
 import db from "../models/index";
+
 
 let handleLogin = async (req, res) => {
     let email = req.body.email;
@@ -64,12 +68,13 @@ let handleGetAllUsers = async (req, res) => {
 }
 let handleCreateNewUser = async (req, res) => {
     try {
-        let message = await userService.createNewUser(req.body);
-        console.log('messenger: ', message);
-        return res.status(200).json(message);
+        const image = req.file;
+        req.body.image = image.path;
+        let info = await userService.createNewUser(req.body);
+        return res.status(200).json(info);
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ error: 'An error occurred while creating a new user.' });
+        return res.status(500).json({ error: 'An error occurred while creating a new user' });
     }
 }
 let handleEditUser = async (req, res) => {
@@ -110,7 +115,6 @@ let getAllCode = async (req, res) => {
         });
     }
 }
-
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,

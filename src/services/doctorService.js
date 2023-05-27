@@ -5,24 +5,20 @@ const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 
 let getTopDoctorHomeService = (limit) => {
     return new Promise(async (resolve, reject) => {
-        console.log('log data limit  from docterSerivice: ', limit)
         try {
-            console.log('log data limit: ', limit);
             let users = await db.User.findAll({
                 limit: limit,
                 where: { roleId: "R2" },
-                //Sắp xếp theo ngày tạo giảm dần
                 order: [["createdAt", "DESC"]],
-                //Loại bỏ trường password
                 attributes: {
-                    exclude: ["password", "image"]
+                    exclude: ["password", "address", "email", "gender", "phonenumber", "createdAt", "updatedAt"]
                 },
                 include: [
                     {
-                        model: db.Allcode, as: "positionData", attributes: ["valueEn", "valueVi"]
+                        model: db.Allcode, as: "positionData", attributes: ["valueVi"]
                     },
                     {
-                        model: db.Allcode, as: "genderData", attributes: ["valueEn", "valueVi"]
+                        model: db.Allcode, as: "genderData", attributes: ["valueVi"]
                     }
                 ],
                 raw: true,
@@ -200,10 +196,40 @@ let bulkCreateSChedule = (data) => {
         }
     })
 }
+let getScheduleByDateService = (doctorId, date) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId || !date) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameters',
+                })
+            } else {
+                let data = await db.Schedule.findAll({
+                    where: { doctorId: doctorId, date: date },
+                    // attributes: ['timeType', 'date', 'doctorId', 'maxNumber'],
+                    raw: true
+                }
+                )
+                if (!data) {
+                    data = [];
+                }
+                resolve({
+                    errCode: 0,
+                    data: data,
+                })
+            }
+        } catch (error) {
+            reject(error)
+            console.log('Show log error: ' + error)
+        }
+    })
+}
 module.exports = {
     getTopDoctorHomeService: getTopDoctorHomeService,
     getAllDoctorsService: getAllDoctorsService,
     saveDetailInformationDoctor: saveDetailInformationDoctor,
     getDetailDoctorById: getDetailDoctorById,
     bulkCreateSChedule: bulkCreateSChedule,
+    getScheduleByDateService: getScheduleByDateService,
 };

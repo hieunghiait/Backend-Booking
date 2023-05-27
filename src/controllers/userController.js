@@ -58,13 +58,22 @@ let handleGetAllUsers = async (req, res) => {
             users: [],
         })
     }
-    let users = await userService.getAllUsers(id);
-    console.log(users)
-    return res.status(200).json({
-        errCode: 0,
-        errMessage: 'OK',
-        users,
-    })
+    try {
+        let users = await userService.getAllUsers(id);
+        console.log(users)
+        return res.status(200).json({
+            errCode: 0,
+            errMessage: 'OK',
+            users,
+        })
+    } catch (error) {
+        console.log('Show log error: ' + error)
+        return res.status(500).json({
+            error: 2,
+            errMessage: 'Internal server error'
+        })
+    }
+
 }
 let handleCreateNewUser = async (req, res) => {
     try {
@@ -74,6 +83,7 @@ let handleCreateNewUser = async (req, res) => {
         return res.status(200).json(info);
     } catch (error) {
         console.error(error);
+        console.log('Show log in error', error);
         return res.status(500).json({ error: 'An error occurred while creating a new user' });
     }
 }

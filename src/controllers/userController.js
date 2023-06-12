@@ -8,26 +8,39 @@ import userService from "../services/userService";
 import bcrypt, { encodeBase64, hash } from 'bcryptjs';
 import db from "../models/index";
 
-
+const validateEmail = (email) => {
+    const regex = /^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})$/;
+    return regex.test(email);
+};
 let handleLogin = async (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
-    //compare password 
-    //return userInfor
-    //Access_Token: JWT 
-    if (!(email && password)) {
+    try {
+        if (!validateEmail(email)) {
+            return res.status(400).json({
+                errCode: -1,
+                errMessage: 'Invalid email'
+            })
+        }
+        if (!(email && password)) {
+            return res.status(500).json({
+                errCode: -1,
+                errMessage: 'Missing inputs parameter'
+            })
+        }
+        let userData = await userService.handleUserLoginService(email, password);
+        return res.status(200).json({
+            errCode: userData.errCode,
+            errMessage: userData.errMessage,
+            user: userData.user ? userData.user : {}
+        })
+    } catch (error) {
+        console.log(error)
         return res.status(500).json({
-            errCode: 1,
-            message: 'Missing inputs parameter'
+            error: -1,
+            errMessage: 'Internal server error'
         })
     }
-    let userData = await userService.handleUserLogin(email, password);
-    console.log(userData)
-    return res.status(200).json({
-        errCode: userData.errCode,
-        message: userData.errMessage,
-        user: userData.user ? userData.user : {}
-    })
 }
 let handleRegister = async (req, res) => {
     try {
@@ -47,6 +60,10 @@ let handleRegister = async (req, res) => {
         }
     } catch (error) {
         console.log(error)
+        res({
+            errCode: -1,
+            errMessage: 'Internal server error'
+        })
     }
 }
 let handleGetAllUsers = async (req, res) => {
@@ -59,8 +76,7 @@ let handleGetAllUsers = async (req, res) => {
         })
     }
     try {
-        let users = await userService.getAllUsers(id);
-        console.log(users)
+        let users = await userService.getAllUsers(id)
         return res.status(200).json({
             errCode: 0,
             errMessage: 'OK',
@@ -77,14 +93,32 @@ let handleGetAllUsers = async (req, res) => {
 }
 let handleCreateNewUser = async (req, res) => {
     try {
-        const image = req.file;
-        req.body.image = image.path;
+        // const image = req.file;
+        // req.body.image = image.path;
         let info = await userService.createNewUser(req.body);
         return res.status(200).json(info);
     } catch (error) {
-        console.error(error);
-        console.log('Show log in error', error);
-        return res.status(500).json({ error: 'An error occurred while creating a new user' });
+        console.log(error);
+        return res.status(500).json({
+            error: 2,
+            errMessage: 'Internal server error'
+        });
+    }
+}
+
+let registerUser = async (req, res) => {
+    const { firstName, lastName, email, password } = req.body;
+    console.log('Show log data : ', req.body);
+    let data = req.body;
+    try {
+        let user = await userService.registerUserService(data)
+        return res.status(200).json(user)
+    } catch (error) {
+        console.log('Show log error: ', error)
+        return res.status(500).json({
+            errCode: 2,
+            errMessage: 'Internal server error'
+        })
     }
 }
 let handleEditUser = async (req, res) => {
@@ -125,6 +159,7 @@ let getAllCode = async (req, res) => {
         });
     }
 }
+
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,
@@ -132,5 +167,6 @@ module.exports = {
     handleEditUser: handleEditUser,
     handleDeleteUser: handleDeleteUser,
     getAllCode: getAllCode,
-    handleRegister, handleRegister
+    handleRegister, handleRegister,
+    registerUser: registerUser,
 }

@@ -1,6 +1,6 @@
 import db from "../models/index";
 require('dotenv').config();
-import _ from 'lodash';
+import _, { drop, reject } from 'lodash';
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 
 let getTopDoctorHomeService = (limit) => {
@@ -47,15 +47,20 @@ let getAllDoctorsService = () => {
         }
     });
 };
-
-let saveDetailInformationDoctor = (inputData) => {
+let saveDetailInformationDoctorService = (inputData) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (
                 !inputData.doctorId ||
                 !inputData.contentHTML ||
                 !inputData.contentMarkdown ||
-                !inputData.action) {
+                !inputData.action ||
+                !inputData.selectedPrice ||
+                !inputData.selectedPayment ||
+                !inputData.selectedProvince ||
+                !inputData.nameClinic ||
+                !inputData.addressClinic ||
+                !inputData.note) {
                 resolve({
                     errCode: 1,
                     errMessage: "Missing parameter",
@@ -81,6 +86,32 @@ let saveDetailInformationDoctor = (inputData) => {
                         await doctorMarkdown.save()
                     }
                 }
+                let doctorInfor = await db.Doctor_Infor.findOne({
+                    where: { doctorId: inputData.doctorId },
+                    raw: false
+                })
+                if (doctorInfor) {
+                    //update
+                    doctorInfor.doctorId = inputData.doctorId;
+                    doctorInfor.priceId = inputData.selectedPrice;
+                    doctorInfor.provinceId = inputData.selectedProvinceId;
+                    doctorInfor.paymentId = inputData.selectedPayment;
+                    doctorInfor.nameClinic = inputData.nameClinic;
+                    doctorInfor.addressClinic = inputData.addressClinic;
+                    doctorInfor.note = inputData.note;
+                    await doctorInfor.save();
+                } else {
+                    //create
+                    await db.Doctor_Infor.create({
+                        doctorId: inputData.doctorId,
+                        priceId: inputData.selectedPrice,
+                        provinceId: inputData.selectedProvinceId,
+                        paymentId: inputData.selectedPayment,
+                        nameClinic: inputData.nameClinic,
+                        addressClinic: inputData.addressClinic,
+                        note: inputData.note,
+                    })
+                }
                 resolve({
                     errCode: 0,
                     errMessage: "Save information doctor sucessfully",
@@ -88,7 +119,7 @@ let saveDetailInformationDoctor = (inputData) => {
             }
         } catch (error) {
             console.log(error)
-            reject(error);
+            reject(error)
         }
     });
 };
@@ -101,14 +132,10 @@ let getDetailDoctorById = (id) => {
                     errMessage: "Missing required parameter",
                 })
             } else {
-                /**
-                 *  SELECT * FROM User WHERE User.id = id
-                 */
                 let data = await db.User.findOne({
                     where: {
                         id: id,
                     },
-                    //ignore 
                     attributes: {
                         //bo truong image #69 
                         exclude: ["password"],
@@ -118,18 +145,35 @@ let getDetailDoctorById = (id) => {
                         attributes: ['description', 'contentHTML', 'contentMarkdown'],
                     },
                     {
-                        model: db.Allcode,
-                        as: "positionData",
-                        attributes: ["valueEn", "valueVi"],
-                    }],
-                    //# 69
-                    raw: false,
+                        model: db.Allcode, as: "positionData", attributes: ["valueVi"]
+                    },
+                    {
+                        model: db.Doctor_Infor,
+                        attributes: {
+                            exclude: ['id', 'doctorId']
+                        },
+                        include: [
+                            {
+                                model: db.Allcode,
+                                as: 'priceTypeData',
+                                attributes: ['valueVi']
+                            },
+                            {
+                                model: db.Allcode,
+                                as: 'provinceTypeData',
+                                attributes: ['valueVi']
+                            },
+                            {
+                                model: db.Allcode,
+                                as: 'priceTypeData',
+                                attributes: ['valueVi']
+                            },
+                        ]
+                    },
+                    ],
+                    raw: true,
                     nest: true,
                 })
-
-                if (data && data.image) {
-                    data.image = new Buffer(data.image, 'base64').toString('binary');
-                }
                 if (!data) {
                     data = {};
                 }
@@ -144,8 +188,7 @@ let getDetailDoctorById = (id) => {
         }
     });
 };
-let bulkCreateSChedule = (data) => {
-    console.log('Show log data: ' + data)
+let bulkCreateScheduleService = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.arrSchedule || !data.doctorId || !data.formatedDate) {
@@ -161,8 +204,6 @@ let bulkCreateSChedule = (data) => {
                         return item;
                     })
                 }
-                console.log('log data schedule: ', schedule);
-                //get all existing data
                 let existing = await db.Schedule.findAll(
                     {
                         where: { doctorId: data.doctorId, date: data.formatedDate },
@@ -170,18 +211,15 @@ let bulkCreateSChedule = (data) => {
                         raw: true
                     }
                 );
-                //Convert date
-                if (existing && existing.length > 0) {
+                /*if (existing && existing.length > 0) {
                     existing = existing.map(item => {
                         item.date == new Date(item.date).getTime();
                         return time;
                     })
-                }
-                //compare difference 
+                }*/
                 let toCreate = _.differenceWith(schedule, existing, (a, b) => {
-                    return a.timeType === b.timeType && a.date === b.date;
+                    return a.timeType === b.timeType && +a.date === +b.date;
                 });
-                //create data
                 if (toCreate && toCreate.length > 0) {
                     await db.Schedule.bulkCreate(toCreate);
                 }
@@ -206,11 +244,19 @@ let getScheduleByDateService = (doctorId, date) => {
                 })
             } else {
                 let data = await db.Schedule.findAll({
-                    where: { doctorId: doctorId, date: date },
+                    where: {
+                        doctorId: doctorId,
+                        date: date
+                    },
                     // attributes: ['timeType', 'date', 'doctorId', 'maxNumber'],
-                    raw: true
-                }
-                )
+                    include: [
+                        {
+                            module: db.Allcode, as: 'timeTypeData', attributes: ['valueVi']
+                        },
+                    ],
+                    raw: false,
+                    nest: true,
+                })
                 if (!data) {
                     data = [];
                 }
@@ -220,16 +266,80 @@ let getScheduleByDateService = (doctorId, date) => {
                 })
             }
         } catch (error) {
+            console.log(error)
             reject(error)
-            console.log('Show log error: ' + error)
+        }
+    })
+}
+let getAllDoctorsInformationService = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let data = await db.Doctor_Infor.findAll({
+                include: [{
+                    model: db.Allcode, as: 'priceTypeData', attributes: ['valueVi']
+                }]
+            })
+            resolve({
+                errCode: 0,
+                data: data
+            })
+        } catch (error) {
+            console.log(error)
+            reject({
+                errCode: -1,
+                errMessage: error,
+            });
+        }
+    });
+};
+let getExtraInforDoctorByIdService = (doctorId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter',
+                })
+            } else {
+                let dataDoctor = await db.Doctor_Infor.findOne({
+                    where: {
+                        doctorId: doctorId
+                    },
+                    attributes: {
+                        exclude: ['id', 'doctorId']
+                    },
+                    // include: [
+                    //     { model: db.Allcode, as: 'priceTypeData', attributes: ['valueVi'] },
+                    //     { module: db.Allcode, as: 'provinceTypeData', attributes: ['valueVi'] },
+                    //     { module: db.Allcode, as: 'paymentTypeData', attributes: ['valueVi'] },
+                    // ],
+                    raw: true,
+                    nest: true,
+                })
+                if (!dataDoctor) {
+                    dataDoctor = {};
+                }
+                resolve({
+                    errCode: 0,
+                    data: dataDoctor,
+                })
+            }
+        } catch (error) {
+            console.log(error)
+            reject({
+                errCode: -1,
+                errMessage: error,
+            })
         }
     })
 }
 module.exports = {
     getTopDoctorHomeService: getTopDoctorHomeService,
     getAllDoctorsService: getAllDoctorsService,
-    saveDetailInformationDoctor: saveDetailInformationDoctor,
+    saveDetailInformationDoctorService: saveDetailInformationDoctorService,
     getDetailDoctorById: getDetailDoctorById,
-    bulkCreateSChedule: bulkCreateSChedule,
+    bulkCreateScheduleService: bulkCreateScheduleService,
     getScheduleByDateService: getScheduleByDateService,
-};
+    getAllDoctorsInformationService, getAllDoctorsInformationService,
+    getExtraInforDoctorByIdService: getExtraInforDoctorByIdService
+}

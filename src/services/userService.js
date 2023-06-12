@@ -4,6 +4,7 @@ import bcrypt, { encodeBase64, hash } from "bcryptjs";
 import user from "../models/user";
 const jwt = require("jsonwebtoken");
 const salt = bcrypt.genSaltSync(10);
+require('dotenv').config()
 
 let hashUserPassword = (password) => {
   return new Promise(async (resolve, reject) => {
@@ -15,18 +16,41 @@ let hashUserPassword = (password) => {
     }
   });
 };
-
-let handleUserLogin = (email, password) => {
+let checkUserEmail = (email) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let user = await db.User.findOne({
+        where: { email: email },
+      })
+      if (user) {
+        resolve(true)
+      } else {
+        resolve(false)
+      }
+    } catch (error) {
+      console.log(error)
+      reject(error)
+    }
+  })
+}
+let handleUserLoginService = (email, password) => {
   return new Promise(async (resolve, reject) => {
     try {
       let userData = {};
       let isExist = await checkUserEmail(email);
       if (isExist) {
         let user = await db.User.findOne({
-          attributes: ["email", "roleId", "password", "firstName", "lastName", "token",],
           where: { email: email },
+          attributes:
+            [
+              "email",
+              "password",
+              "firstName",
+              "lastName",
+              "roleId",
+            ],
           raw: true,
-        });
+        })
         if (user) {
           let check = await bcrypt.compareSync(password, user.password);
           if (check) {
@@ -34,9 +58,6 @@ let handleUserLogin = (email, password) => {
             userData.errMessage = "Login sucessfully";
             delete user.password;
             userData.user = user;
-            userData.token = jwt.sign({ email }, "hieunghia", {
-              expiresIn: "2h",
-            });
           } else {
             userData.errCode = 3;
             userData.errMessage = "Wrong password";
@@ -55,23 +76,6 @@ let handleUserLogin = (email, password) => {
     }
   });
 };
-let checkUserEmail = (userEmail) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let user = await db.User.findOne({
-        where: { email: userEmail },
-      });
-      if (user) {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
-    } catch (e) {
-      console.log('Show log error: ' + e);
-      reject(e);
-    }
-  });
-};
 
 let getAllUsers = (userId) => {
   return new Promise(async (resolve, reject) => {
@@ -80,7 +84,6 @@ let getAllUsers = (userId) => {
       if (userId === "ALL") {
         users = await db.User.findAll({
           attributes: {
-            //ignore password
             exclude: ["password"],
           },
         });
@@ -112,27 +115,12 @@ let createNewUser = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (!data.email || !data.password || !data.firstName || !data.lastName || !data.address) {
-        reject({
+        resolve({
           errCode: 1,
           errMessage: "Missing required fields"
         });
       }
       const isValidEmail = validateEmail(data.email);
-      // const isValidPhoneNumber = validatePhoneNumber(data.phonenumber);
-      // if (!isValidEmail) {
-      //     resolve({
-      //         errCode: 1,s
-      //         errMessage: 'Invalid email address',
-      //     });
-      //     return;
-      // }
-      /**if (!isValidPhoneNumber) {
-        resolve({
-          errCode: 1,
-          errMessage: "Invalid phone number",
-        });
-        return;
-      }**/
       if (!isValidEmail) {
         resolve({
           errCode: 1,
@@ -141,39 +129,35 @@ let createNewUser = (data) => {
       }
       const emailExists = await checkUserEmail(data.email);
       if (emailExists) {
-        resolve({
+        return resolve({
           errCode: 1,
           errMessage: "Your email already exists in the database, Please try another email",
         });
       } else {
-        /**const tokenUser = jwt.sign({ email: data.email }, "hieunghia", {
-          expiresIn: "2h",
-        });**/
         const hashPasswordFromBcrypt = await hashUserPassword(data.password);
-        const user = await db.User.create({
+        await db.User.create({
           email: data.email,
           password: hashPasswordFromBcrypt,
           firstName: data.firstName,
           lastName: data.lastName,
           address: data.address,
           phonenumber: data.phonenumber,
-          // gender: data.gender === "1" ? true : false,
           gender: data.gender,
           roleId: 'R2',
           positionId: data.positionId,
-          image: data.image,
+          // image: data.image,
         });
       }
       resolve({
         errCode: 0,
         errMessage: "Create user successfully",
       });
-    } catch (exception) {
-      console.log('Show log error createNewUserService: ', exception);
-      reject(exception);
+    } catch (error) {
+      console.log(error)
+      reject(error)
     }
   });
-};
+}
 
 let deleteUser = (userId) => {
   return new Promise(async (resolve, reject) => {
@@ -250,7 +234,7 @@ let getAllCodeService = (typeInput) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (!typeInput) {
-        resolve({
+        reject({
           errCode: 1,
           errMessage: "Missing required parameters",
         });
@@ -264,16 +248,68 @@ let getAllCodeService = (typeInput) => {
         resolve(res);
       }
     } catch (e) {
+      console.log("Show log error: " + e.message)
       reject(e);
     }
   });
 };
-
+let registerUserService = (data) => {
+  return new Promise(async (resolve, reject) => {
+    if (!data) {
+      reject({
+        errCode: 1,
+        errMessage: "Missing required fields"
+      });
+    }
+    /*if (!data.email || !data.password || !data.firstName || !data.lastName || !data.address) {
+      reject({
+        errCode: 1,
+        errMessage: "Missing required fields"
+      });
+    }*/
+    try {
+      const isValidEmail = validateEmail(data)
+      if (!isValidEmail) {
+        reject({
+          errCode: 1,
+          errMessage: "Invalid email address",
+        })
+      }
+      const isExistEmail = await checkUserEmail(data)
+      if (!isExistEmail) {
+        reject({
+          errCode: 1,
+          errMessage: "Email address already exists",
+        })
+      }
+      const hashPasswordFromBcrypt = await hashPassword(data.password)
+      const newUser = await db.User.create({
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        password: hashPasswordFromBcrypt,
+        address: data.address,
+      })
+      resolve({
+        errCode: 0,
+        errMessage: "User created successfully",
+        newUser
+      })
+    } catch (error) {
+      console.error(error)
+      reject({
+        errCode: 2,
+        errMessage: "Database error while creating user"
+      })
+    }
+  })
+}
 module.exports = {
-  handleUserLogin: handleUserLogin,
+  handleUserLoginService: handleUserLoginService,
   getAllUsers: getAllUsers,
   createNewUser: createNewUser,
   deleteUser: deleteUser,
   updateUserData: updateUserData,
   getAllCodeService: getAllCodeService,
+  registerUserService, registerUserService
 };

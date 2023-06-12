@@ -22,7 +22,7 @@ let getAllDoctors = async (req, res) => {
     let doctors = await doctorService.getAllDoctorsService();
     return res.status(200).json(doctors);
   } catch (error) {
-    console.log('Show log getAllDoctors error: ' + error.message);
+    console.log('Show log getAllDoctors error: ');
     return res.status(500).json({
       errCode: -1,
       errMessage: "Failed to retrieve doctors",
@@ -30,13 +30,13 @@ let getAllDoctors = async (req, res) => {
   }
 };
 
-let postInforDoctor = async (req, res) => {
+let saveInformationDoctor = async (req, res) => {
   try {
-    let respone = await doctorService.saveDetailInformationDoctor(req.body);
-    return res.status(200).json(respone);
+    let userInfo = await doctorService.saveDetailInformationDoctorService(req.body);
+    return res.status(200).json(userInfo);
   } catch (error) {
     console.log(error);
-    return res.status(200).json({
+    return res.status(500).json({
       errCode: -1,
       errMessage: "Error from the server",
     });
@@ -54,21 +54,19 @@ let getThongTinDoctorById = async (req, res) => {
     return res.status(200).json(info);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
-      error: -1,
+    return res.status(400).json({
+      errCode: -1,
       errMessage: "Error from the server",
     });
   }
 };
 let bulkCreateSchedule = async (req, res) => {
   try {
-    let info = await doctorService.bulkCreateSChedule(req.body);
-    console.log('Show log data info: ' + info)
+    let info = await doctorService.bulkCreateScheduleService(req.body);
     return res.status(200).json(info)
   } catch (error) {
-    console.log('Show log error: ' + error)
     return res.status(500).json({
-      error: -1,
+      errCode: -1,
       errMessage: 'Internal Server Error',
     })
   }
@@ -76,21 +74,48 @@ let bulkCreateSchedule = async (req, res) => {
 let getScheduleByDate = async (req, res) => {
   try {
     let info = await doctorService.getScheduleByDateService(req.query.doctorId, req.query.date);
-    console.log('Show log data info: ' + info)
     return res.status(200).json(info)
   } catch (error) {
     console.log('Show log error: ' + error)
     return res.status(500).json({
-      error: -1,
+      errCode: -1,
       errMessage: 'Internal Server Error',
     })
   }
 }
+let getAllDoctorsInformation = async (req, res) => {
+  try {
+    let data = await doctorService.getAllDoctorsInformationService()
+    return res.status(200).json(data)
+  } catch (error) {
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: error.message
+    })
+  }
+}
+let getExtraInforDoctorById = async (req, res) => {
+  try {
+    let dataInfor = await doctorService.getExtraInforDoctorByIdService(req.query.doctorId)
+    return res.status(200).json(dataInfor)
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: error.message
+    })
+  }
+}
+
+
+
 module.exports = {
   getTopDoctorHome: getTopDoctorHome,
   getAllDoctors: getAllDoctors,
-  postInforDoctor: postInforDoctor,
+  saveInformationDoctor: saveInformationDoctor,
   getThongTinDoctorById: getThongTinDoctorById,
   bulkCreateSchedule: bulkCreateSchedule,
   getScheduleByDate: getScheduleByDate,
-};
+  getAllDoctorsInformation: getAllDoctorsInformation,
+  getExtraInforDoctorById: getExtraInforDoctorById,
+}

@@ -39,7 +39,7 @@ let getAllDoctorsService = () => {
         try {
             let doctors = await db.User.findAll({
                 where: { roleId: "R2" },
-                attributes: { exclude: ["password", "image"] },
+                attributes: { exclude: ["password"] },
             });
             resolve({ errCode: 0, data: doctors });
         } catch (error) {

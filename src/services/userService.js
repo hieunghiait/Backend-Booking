@@ -145,7 +145,7 @@ let createNewUser = (data) => {
           gender: data.gender,
           roleId: 'R2',
           positionId: data.positionId,
-          image: data.image,
+          image: data.avatar,
         });
       }
       resolve({

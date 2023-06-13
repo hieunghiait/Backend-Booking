@@ -154,19 +154,13 @@ let getDetailDoctorById = (id) => {
                         },
                         include: [
                             {
-                                model: db.Allcode,
-                                as: 'priceTypeData',
-                                attributes: ['valueVi']
+                                model: db.Allcode, as: 'priceTypeData', attributes: ['valueVi']
                             },
                             {
-                                model: db.Allcode,
-                                as: 'provinceTypeData',
-                                attributes: ['valueVi']
+                                model: db.Allcode, as: 'provinceTypeData', attributes: ['valueVi']
                             },
                             {
-                                model: db.Allcode,
-                                as: 'priceTypeData',
-                                attributes: ['valueVi']
+                                model: db.Allcode, as: 'priceTypeData', attributes: ['valueVi']
                             },
                         ]
                     },
@@ -174,6 +168,9 @@ let getDetailDoctorById = (id) => {
                     raw: true,
                     nest: true,
                 })
+                if (data && data.image) {
+                    data.image = new Buffer(data.image, 'base64').toString('binary');
+                }
                 if (!data) {
                     data = {};
                 }
@@ -308,11 +305,11 @@ let getExtraInforDoctorByIdService = (doctorId) => {
                     attributes: {
                         exclude: ['id', 'doctorId']
                     },
-                    // include: [
-                    //     { model: db.Allcode, as: 'priceTypeData', attributes: ['valueVi'] },
-                    //     { module: db.Allcode, as: 'provinceTypeData', attributes: ['valueVi'] },
-                    //     { module: db.Allcode, as: 'paymentTypeData', attributes: ['valueVi'] },
-                    // ],
+                    include: [
+                        { model: db.Allcode, as: 'priceTypeData', attributes: ['valueVi'] },
+                        { module: db.Allcode, as: 'provinceTypeData', attributes: ['valueVi'] },
+                        { module: db.Allcode, as: 'paymentTypeData', attributes: ['valueVi'] },
+                    ],
                     raw: true,
                     nest: true,
                 })
@@ -333,6 +330,60 @@ let getExtraInforDoctorByIdService = (doctorId) => {
         }
     })
 }
+let getProfileDoctorById = (inputId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!inputId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing input parameters'
+                })
+            } else {
+                let data = await db.User.findOne({
+                    where: {
+                        id: inputId
+                    },
+                    attributes: {
+                        exclude: ['password']
+                    },
+                    include: [
+                        {
+                            model: db.Markdown,
+                            attributes: ['description', 'contentHTML', 'contentMarkdown']
+                        },
+                        { model: db.Allcode, as: 'positionData', attributes: ['valueVi'] },
+                        {
+                            model: db.Doctor_Infor,
+                            attributes: {
+                                exclude: ['id', 'doctorId'],
+                            }, include: [
+                                { model: db.Allcode, as: 'priceTypeData', attributes: ['valueVi'] },
+                                { model: db.Allcode, as: 'provinceTypeData', attributes: ['valueVi'] },
+                                { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueVi'] }
+                            ]
+                        },
+                    ],
+                    raw: false,
+                    nest: true,
+                })
+                if (data && data.image) {
+                    data.image = new Buffer(data.image, 'base64').toString('binary');
+                }
+                if (!data) data = {};
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+        } catch (error) {
+            console.log(error)
+            reject({
+                errCode: -1,
+                errMessage: error.message
+            })
+        }
+    })
+}
 module.exports = {
     getTopDoctorHomeService: getTopDoctorHomeService,
     getAllDoctorsService: getAllDoctorsService,
@@ -341,5 +392,6 @@ module.exports = {
     bulkCreateScheduleService: bulkCreateScheduleService,
     getScheduleByDateService: getScheduleByDateService,
     getAllDoctorsInformationService, getAllDoctorsInformationService,
-    getExtraInforDoctorByIdService: getExtraInforDoctorByIdService
+    getExtraInforDoctorByIdService: getExtraInforDoctorByIdService,
+    getProfileDoctorById: getProfileDoctorById,
 }

@@ -44,7 +44,7 @@ let handleLogin = async (req, res) => {
 }
 let handleRegister = async (req, res) => {
     try {
-        let email = req.body.id;
+        let user = req.body.email;
         let password = req.body.password;
         let firstName = req.body.firstName;
         let lastName = req.body.lastName;

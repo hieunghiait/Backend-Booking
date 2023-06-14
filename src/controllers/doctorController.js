@@ -109,7 +109,7 @@ let getExtraInforDoctorById = async (req, res) => {
 
 let getProfileDoctorById = async (req, res) => {
   try {
-    let dataInfor = await doctorService.getExtraInforDoctorByIdService(req.query.doctorId)
+    let dataInfor = await doctorService.getProfileDoctorById(req.query.doctorId)
     return res.status(200).json(dataInfor)
   } catch (error) {
     console.log(error)
@@ -119,7 +119,7 @@ let getProfileDoctorById = async (req, res) => {
     })
   }
 }
-
+let postBookAppointment = async (req, res) => { }
 
 module.exports = {
   getTopDoctorHome: getTopDoctorHome,
@@ -131,4 +131,5 @@ module.exports = {
   getAllDoctorsInformation: getAllDoctorsInformation,
   getExtraInforDoctorById: getExtraInforDoctorById,
   getProfileDoctorById: getProfileDoctorById,
+  postBookAppointment: postBookAppointment
 }

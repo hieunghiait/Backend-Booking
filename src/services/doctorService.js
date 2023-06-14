@@ -160,7 +160,7 @@ let getDetailDoctorById = (id) => {
                                 model: db.Allcode, as: 'provinceTypeData', attributes: ['valueVi']
                             },
                             {
-                                model: db.Allcode, as: 'priceTypeData', attributes: ['valueVi']
+                                model: db.Allcode, as: 'paymentTypeData', attributes: ['valueVi']
                             },
                         ]
                     },
@@ -307,10 +307,10 @@ let getExtraInforDoctorByIdService = (doctorId) => {
                     },
                     include: [
                         { model: db.Allcode, as: 'priceTypeData', attributes: ['valueVi'] },
-                        { module: db.Allcode, as: 'provinceTypeData', attributes: ['valueVi'] },
-                        { module: db.Allcode, as: 'paymentTypeData', attributes: ['valueVi'] },
+                        { model: db.Allcode, as: 'provinceTypeData', attributes: ['valueVi'] },
+                        { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueVi'] },
                     ],
-                    raw: true,
+                    raw: false,
                     nest: true,
                 })
                 if (!dataDoctor) {

@@ -15,9 +15,7 @@ const storage = new CloudinaryStorage({
     // filename: function (req, file, cb) {
     //     cb(null, file.file);
     // }
-    params: {
-        folder: 'images'
-    }
+    params: { folder: 'images' }
 });
 
 const uploadCloud = multer({ storage });

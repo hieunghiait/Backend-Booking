@@ -195,6 +195,8 @@ let bulkCreateScheduleService = (data) => {
                 })
             } else {
                 let schedule = data.arrSchedule;
+                console.log("schedule: " + schedule)
+                console.log("arrSchedule: " + data.arrSchedule)
                 if (schedule && schedule.length > 0) {
                     schedule = schedule.map(item => {
                         item.maxNumber = MAX_NUMBER_SCHEDULE;
@@ -237,6 +239,7 @@ let bulkCreateScheduleService = (data) => {
 }
 let getScheduleByDateService = (doctorId, date) => {
     return new Promise(async (resolve, reject) => {
+        console.log('Log doctorId: ' + doctorId + ' date: ' + date)
         try {
             if (!doctorId || !date) {
                 resolve({
@@ -244,7 +247,7 @@ let getScheduleByDateService = (doctorId, date) => {
                     errMessage: 'Missing required parameters',
                 })
             } else {
-                let data = await db.Schedule.findAll({
+                let dataSchedule = await db.Schedule.findAll({
                     where: {
                         doctorId: doctorId,
                         date: date
@@ -253,19 +256,23 @@ let getScheduleByDateService = (doctorId, date) => {
                     include:
                         [
                             {
+                                //Lấy giá trị
                                 model: db.Allcode, as: 'timeTypeData', attributes: ['valueVi']
                             },
                         ],
                     raw: false,
                     nest: true,
                 })
-                if (!data) {
-                    data = [];
+                //Nếu không có dữ liệu
+                if (!dataSchedule) {
+                    dataSchedule = [];
                 }
+                console.log("Log date: " + data.date);
                 resolve({
                     errCode: 0,
-                    data: data,
+                    data: dataSchedule,
                 })
+                console.log("Log date: " + data.date);
             }
         } catch (error) {
             console.log(error)

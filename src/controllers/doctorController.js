@@ -63,8 +63,9 @@ let getThongTinDoctorById = async (req, res) => {
 };
 let bulkCreateSchedule = async (req, res) => {
   try {
+    console.log("Log body: " + JSON.stringify(req.body));
     let info = await doctorService.bulkCreateScheduleService(req.body);
-    console.log('Log: ' + info)
+    console.log('Log info: ' + JSON.stringify(info))
     return res.status(200).json(info)
   } catch (error) {
     console.log("Log: " + error)
@@ -77,6 +78,7 @@ let bulkCreateSchedule = async (req, res) => {
 let getScheduleByDate = async (req, res) => {
   try {
     let info = await doctorService.getScheduleByDateService(req.query.doctorId, req.query.date);
+    console.log('getScheduleByDate: ' + info)
     return res.status(200).json(info)
   } catch (error) {
     console.log('Show log error: ' + error)

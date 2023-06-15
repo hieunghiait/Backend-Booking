@@ -51,6 +51,7 @@ let getThongTinDoctorById = async (req, res) => {
       })
     }
     let info = await doctorService.getDetailDoctorById(req.query.id);
+    console.log(info)
     return res.status(200).json(info);
   } catch (error) {
     console.log(error);
@@ -63,8 +64,10 @@ let getThongTinDoctorById = async (req, res) => {
 let bulkCreateSchedule = async (req, res) => {
   try {
     let info = await doctorService.bulkCreateScheduleService(req.body);
+    console.log('Log: ' + info)
     return res.status(200).json(info)
   } catch (error) {
+    console.log("Log: " + error)
     return res.status(500).json({
       errCode: -1,
       errMessage: 'Internal Server Error',

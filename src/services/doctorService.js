@@ -1,6 +1,6 @@
 import db from "../models/index";
 require('dotenv').config();
-import _, { drop, reject } from 'lodash';
+import _ from 'lodash';
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 
 let getTopDoctorHomeService = (limit) => {
@@ -147,23 +147,23 @@ let getDetailDoctorById = (id) => {
                     {
                         model: db.Allcode, as: "positionData", attributes: ["valueVi"]
                     },
-                    {
-                        model: db.Doctor_Infor,
-                        attributes: {
-                            exclude: ['id', 'doctorId']
-                        },
-                        include: [
-                            {
-                                model: db.Allcode, as: 'priceTypeData', attributes: ['valueVi']
-                            },
-                            {
-                                model: db.Allcode, as: 'provinceTypeData', attributes: ['valueVi']
-                            },
-                            {
-                                model: db.Allcode, as: 'paymentTypeData', attributes: ['valueVi']
-                            },
-                        ]
-                    },
+                        // {
+                        //     model: db.Doctor_Infor,
+                        //     attributes: {
+                        //         exclude: ['id', 'doctorId']
+                        //     },
+                        //     include: [
+                        //         {
+                        //             model: db.Allcode, as: 'priceTypeData', attributes: ['valueVi']
+                        //         },
+                        //         {
+                        //             model: db.Allcode, as: 'provinceTypeData', attributes: ['valueVi']
+                        //         },
+                        //         {
+                        //             model: db.Allcode, as: 'paymentTypeData', attributes: ['valueVi']
+                        //         },
+                        //     ]
+                        // },
                     ],
                     raw: true,
                     nest: true,
@@ -203,20 +203,24 @@ let bulkCreateScheduleService = (data) => {
                 }
                 let existing = await db.Schedule.findAll(
                     {
-                        where: { doctorId: data.doctorId, date: data.formatedDate },
+                        where: {
+                            doctorId: data.doctorId,
+                            date: data.formatedDate
+                        },
                         attributes: ['timeType', 'date', 'doctorId', 'maxNumber'],
                         raw: true
                     }
                 );
-                /*if (existing && existing.length > 0) {
+                if (existing && existing.length > 0) {
                     existing = existing.map(item => {
-                        item.date == new Date(item.date).getTime();
+                        item.date = new Date(item.date).getTime();
                         return time;
                     })
-                }*/
+                }
                 let toCreate = _.differenceWith(schedule, existing, (a, b) => {
                     return a.timeType === b.timeType && +a.date === +b.date;
                 });
+                //create data 
                 if (toCreate && toCreate.length > 0) {
                     await db.Schedule.bulkCreate(toCreate);
                 }
@@ -246,11 +250,12 @@ let getScheduleByDateService = (doctorId, date) => {
                         date: date
                     },
                     // attributes: ['timeType', 'date', 'doctorId', 'maxNumber'],
-                    include: [
-                        {
-                            module: db.Allcode, as: 'timeTypeData', attributes: ['valueVi']
-                        },
-                    ],
+                    include:
+                        [
+                            {
+                                model: db.Allcode, as: 'timeTypeData', attributes: ['valueVi']
+                            },
+                        ],
                     raw: false,
                     nest: true,
                 })
